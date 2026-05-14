@@ -80,6 +80,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.RequestExceptionLoggingMiddleware",
     "config.middleware.DatabaseErrorResponseMiddleware",
     "django.middleware.security.SecurityMiddleware",
 ]

@@ -15,12 +15,15 @@ _KO_PHASE_ORDER: dict[str, int] = {
 }
 
 
-def wc_round_sort_key(round_name: str) -> tuple:
+def wc_round_sort_key(round_name: object) -> tuple:
     """
     Sort key: group stage first (by letter A–L, then matchday), then knockout in bracket order.
     Unknown names sort last within their bucket.
     """
-    name = (round_name or "").strip()
+    try:
+        name = str(round_name or "").strip()
+    except Exception:
+        return (2, 99999, "")
     m = re.match(r"^Group\s+([A-Za-z])", name)
     if m:
         letter = m.group(1).upper()

@@ -88,8 +88,10 @@ Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.e
 
 1. **Run migrations** (includes `matches_newsfeeditem` / `knockoutfeed`): `python manage.py migrate --noinput`
 2. **Reinstall deps** so `beautifulsoup4` is present (used only by `refresh_goal_feed`, not normal page loads).
-3. Check **Render / host logs** for the traceback; the app now tolerates a missing `NewsFeedItem` table and a missing `matches_today_json` route when resolving the base layout URL.
-4. If any **`round_name` in the database contains `/`**, older URL patterns broke every page’s header; the route now uses `<path:round_name>` so those names resolve. Redeploy after pulling the fix.
+3. Open **`/healthz/`** — should return plain `ok`. Open **`/healthz/db/`** — should JSON-report `"database": "ok"`. If the DB check fails, fix Postgres / `DATABASE_URL` first.
+4. In **Render → Logs** (or gunicorn stderr), every uncaught exception is logged with a **full traceback** (outer `RequestExceptionLoggingMiddleware`).
+5. **Temporary browser traceback** (remove after debugging): set env **`SHOW_SERVER_ERRORS=1`** on the service, redeploy, reload `/` — the response body will be plain-text Python traceback. **Unset** when done.
+6. If any **`round_name` in the database contains `/`**, use the latest code: the route uses `<path:round_name>` so those names resolve.
 
 ## Project layout (high level)
 
@@ -105,6 +107,8 @@ Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.e
 
 | Path | Description |
 |------|-------------|
+| `/healthz/` | Liveness: returns `ok` (no DB) |
+| `/healthz/db/` | DB probe: JSON `{"database":"ok"}` or 503 with error detail |
 | `/` | Home / rounds |
 | `/api/today-matches/` | JSON: today’s matches for an IANA zone (`?tz=America/New_York`) |
 | `/fixtures/` | Fixtures hub |

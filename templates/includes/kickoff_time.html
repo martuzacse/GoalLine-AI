@@ -1,5 +1,6 @@
+{% load datetime_tags %}
 {% if kickoff %}
-<time class="kickoff-local muted small" datetime="{{ kickoff.isoformat }}" title="{{ kickoff.isoformat }}">{{ kickoff|date:"M j, Y H:i" }} UTC</time>
+<time class="kickoff-local muted small" datetime="{{ kickoff|iso8601 }}" title="{{ kickoff|iso8601 }}">{{ kickoff|date:"M j, Y H:i" }} UTC</time>
 {% else %}
 <span class="muted small">TBC</span>
 {% endif %}
