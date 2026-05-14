@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ match.home_team.code }} vs {{ match.away_team.code }} · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="crumb">
+    <a href="{% url 'predictions:round' round_name=match.round_name %}">← {{ match.round_name }}</a>
+  </p>
+  <h1>{{ match.home_team.name }} vs {{ match.away_team.name }}</h1>
+  <p class="lede">
+    Status: <strong>{{ match.get_status_display }}</strong>
+    {% if match.home_score is not None %}
+      · Live / final score in DB: <strong>{{ match.home_score }}–{{ match.away_score }}</strong>
+    {% endif %}
+  </p>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Actions</h2>
+    <p class="muted">
+      Updates the prediction using squad rows, tactical notes, optional scores, and the news digest from admin.
+    </p>
+    <form method="post" action="{% url 'predictions:run_agent' match_id=match.id %}">
+      {% csrf_token %}
+      <button class="btn btn-primary" type="submit">Run DeepSeek agent</button>
+    </form>
+    {% if debug %}
+      <form class="mt" method="post" action="{% url 'predictions:run_stub' match_id=match.id %}">
+        {% csrf_token %}
+        <button class="btn btn-ghost" type="submit">Save demo stub (no API)</button>
+      </form>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Latest forecast</h2>
+    {% if latest %}
+      <p class="scoreline">{{ latest.pred_home_goals }}–{{ latest.pred_away_goals }}</p>
+      <p>Confidence: <strong>{{ latest.confidence }}%</strong></p>
+      <p class="muted small">Snapshot at {{ latest.created_at }} UTC</p>
+      {% if latest.change_explanation %}
+        <h3 class="h3">Why it changed</h3>
+        <p>{{ latest.change_explanation }}</p>
+      {% endif %}
+    {% else %}
+      <p class="muted">No snapshots yet — run the agent or seed data.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Predicted scorers (latest)</h2>
+  {% if latest %}
+    {% include "predictions/includes/scorers.html" with prediction=latest %}
+  {% else %}
+    <p class="muted">—</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Full reasoning (latest)</h2>
+  {% if latest %}
+    <p class="prose">{{ latest.reasoning }}</p>
+    {% if latest.factors %}
+      <h3 class="h3">Structured factors</h3>
+      <div class="factors">
+        {% for key, val in latest.factors.items %}
+          <p><strong>{{ key }}:</strong> {{ val }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    <p class="muted">—</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Prediction timeline</h2>
+  {% if snapshots %}
+    <ol class="timeline">
+      {% for s in snapshots %}
+        <li>
+          <div class="timeline-head">
+            <span class="scoreline sm">{{ s.pred_home_goals }}–{{ s.pred_away_goals }}</span>
+            <span class="muted">{{ s.created_at }} UTC · confidence {{ s.confidence }}%</span>
+          </div>
+          {% if s.change_explanation %}
+            <p><strong>Delta vs prior:</strong> {{ s.change_explanation }}</p>
+          {% elif s.supersedes_id %}
+            <p class="muted">Supersedes snapshot #{{ s.supersedes_id }} (no separate delta text).</p>
+          {% endif %}
+          <details>
+            <summary>Reasoning excerpt</summary>
+            <p class="prose small">{{ s.reasoning|truncatewords:80 }}</p>
+          </details>
+          {% if s.predicted_scorers %}
+            <details class="mt-details">
+              <summary>Predicted scorers</summary>
+              {% include "predictions/includes/scorers.html" with prediction=s %}
+            </details>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">Empty timeline.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Context digest last sent</h2>
+  {% if latest and latest.source_digest %}
+    <pre class="digest">{{ latest.source_digest }}</pre>
+  {% else %}
+    <p class="muted">Run the agent once to capture the digest.</p>
+  {% endif %}
+</section>
+{% endblock %}

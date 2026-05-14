@@ -1,0 +1,49 @@
+{% if prediction.predicted_scorers %}
+  {% with ps=prediction.predicted_scorers %}
+    {% if ps.summary %}
+      <p class="scorers-summary">{{ ps.summary }}</p>
+    {% endif %}
+    <div class="scorer-columns">
+      <div>
+        <h4 class="scorer-side">Home scorers</h4>
+        {% if ps.home %}
+          <ul class="scorer-list">
+            {% for row in ps.home %}
+              <li>
+                <strong>{{ row.player }}</strong>
+                {% if row.confidence or row.confidence == 0 %}
+                  <span class="pill">{{ row.confidence }}%</span>
+                {% endif %}
+                {% if row.rationale %}
+                  <div class="scorer-rationale">{{ row.rationale }}</div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted small">None predicted</p>
+        {% endif %}
+      </div>
+      <div>
+        <h4 class="scorer-side">Away scorers</h4>
+        {% if ps.away %}
+          <ul class="scorer-list">
+            {% for row in ps.away %}
+              <li>
+                <strong>{{ row.player }}</strong>
+                {% if row.confidence or row.confidence == 0 %}
+                  <span class="pill">{{ row.confidence }}%</span>
+                {% endif %}
+                {% if row.rationale %}
+                  <div class="scorer-rationale">{{ row.rationale }}</div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted small">None predicted</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endwith %}
+{% endif %}

@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Fixtures hub · WC Predict{% endblock %}
+{% block content %}
+<section class="fixtures-hero">
+  <h1>Fixtures & predictions</h1>
+  <p class="lede">
+    Pick <strong>Current</strong> for club or international friendlies you store as non–World Cup fixtures, or
+    <strong>World Cup 2026</strong> for every tournament match grouped by round. Open a match to run the DeepSeek agent.
+    This hub only shows <em>your database</em> — it does not scrape external sites.
+  </p>
+  <p class="fixtures-disclaimer">
+    Not affiliated with
+    <a href="https://www.goal.com/en-us" rel="noopener noreferrer">Goal.com</a>.
+    Layout is inspired by common live-score strips; add your own data in admin.
+  </p>
+</section>
+
+<nav class="fixtures-tabs" aria-label="Fixture scope">
+  <a
+    class="fixtures-tab{% if tab == 'current' %} fixtures-tab-active{% endif %}"
+    href="{% url 'predictions:fixtures_hub' %}?tab=current{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+  >Current matches</a>
+  <a
+    class="fixtures-tab{% if tab == 'worldcup' %} fixtures-tab-active{% endif %}"
+    href="{% url 'predictions:fixtures_hub' %}?tab=worldcup{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+  >World Cup only</a>
+</nav>
+
+<form class="fixtures-search" method="get" action="{% url 'predictions:fixtures_hub' %}" role="search">
+  <input type="hidden" name="tab" value="{{ tab }}">
+  <label class="sr-only" for="fixture-q">Search fixtures</label>
+  <input
+    id="fixture-q"
+    class="fixtures-search-input"
+    type="search"
+    name="q"
+    value="{{ search_query }}"
+    placeholder="Country, FIFA code (BRA), group A–L, “Group H”, matchday, league…"
+    autocomplete="off"
+    maxlength="120"
+  >
+  <button class="btn btn-primary fixtures-search-btn" type="submit">Search</button>
+  {% if search_query %}
+    <a class="fixtures-search-clear" href="{% url 'predictions:fixtures_hub' %}?tab={{ tab }}">Clear</a>
+  {% endif %}
+</form>
+{% if search_query %}
+  <p class="search-meta muted small">
+    Showing <strong>{{ current_total }}</strong> current match{{ current_total|pluralize }} and
+    <strong>{{ wc_match_total }}</strong> World Cup match{{ wc_match_total|pluralize }} for “{{ search_query }}”.
+    Single letters <strong>A</strong>–<strong>L</strong> match that World Cup group; use at least three characters to search tactics or news digests.
+  </p>
+{% endif %}
+
+{% if tab == 'current' %}
+<section class="card fixtures-panel">
+  <h2>Current competitions</h2>
+  <p class="muted small">Non–World Cup rows: use for “today’s games” style lists (league label + status + predicted line).</p>
+  {% if current_matches %}
+    <div class="score-strip" role="list">
+      {% for m in current_matches %}
+        <article class="score-tile" role="listitem">
+          <div class="tile-league">{{ m.competition_display|default:"Competition" }}</div>
+          <div class="tile-statusline">
+            {% if m.status == "live" %}
+              <span class="live-dot">Live</span>
+            {% elif m.status == "finished" %}
+              <span class="muted small">FT</span>
+            {% else %}
+              <span class="muted small">Scheduled</span>
+            {% endif %}
+          </div>
+          <div class="tile-teams">
+            <span class="crest-line"><span class="code">{{ m.home_team.code }}</span> vs <span class="code">{{ m.away_team.code }}</span></span>
+          </div>
+          <div class="tile-score">
+            {% if m.home_score is not None %}
+              <span class="big-score">{{ m.home_score }}–{{ m.away_score }}</span>
+            {% else %}
+              <span class="muted">— : —</span>
+            {% endif %}
+          </div>
+          {% if m.latest_prediction %}
+            <div class="tile-pred muted small">AI: {{ m.latest_prediction.scoreline_label }} ({{ m.latest_prediction.confidence }}%)</div>
+          {% else %}
+            <div class="tile-pred muted small">No prediction yet</div>
+          {% endif %}
+          <div class="tile-actions">
+            <a class="btn btn-primary btn-sm" href="{% url 'predictions:match_detail' match_id=m.id %}">Predict</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">
+      {% if search_query %}No current matches match “{{ search_query }}”.{% else %}No current (non–World Cup) fixtures. In admin, add matches with <strong>Is world cup</strong> unchecked.{% endif %}
+    </p>
+  {% endif %}
+</section>
+{% else %}
+<section class="card fixtures-panel">
+  <h2>2026 FIFA World Cup — all rounds</h2>
+  <p class="muted small">
+    Group stage: 72 fixtures can be bulk-loaded with
+    <code>python manage.py load_wc2026_fixtures --replace-wc</code>
+    (see <code>matches/wc2026_data.py</code>). Knock-out slots are bracket-dependent and are not auto-generated yet.
+  </p>
+  {% if wc_rounds %}
+    {% for round_name, rmatches in wc_rounds %}
+      <div class="wc-round-block">
+        <h3 class="wc-round-title">{{ round_name }}</h3>
+        <div class="wc-grid">
+          {% for m in rmatches %}
+            <div class="wc-card">
+              <div class="wc-card-head">
+                <span class="muted small">World Cup</span>
+                {% if m.status == "live" %}
+                  <span class="live-dot">Live</span>
+                {% endif %}
+              </div>
+              <div class="wc-teams">{{ m.home_team.name }} <span class="vs">v</span> {{ m.away_team.name }}</div>
+              <div class="wc-scoreline">
+                {% if m.home_score is not None %}
+                  {{ m.home_score }}–{{ m.away_score }}
+                {% else %}
+                  <span class="muted">Score TBC</span>
+                {% endif %}
+              </div>
+              {% if m.latest_prediction %}
+                <div class="wc-pred">
+                  <span class="label">Predicted</span>
+                  <strong>{{ m.latest_prediction.scoreline_label }}</strong>
+                  <span class="muted small">{{ m.latest_prediction.confidence }}%</span>
+                </div>
+                {% if m.pred_scorers_one_line %}
+                  <div class="wc-scorers muted small">{{ m.pred_scorers_one_line }}</div>
+                {% endif %}
+              {% else %}
+                <div class="wc-pred muted small">No prediction yet</div>
+              {% endif %}
+              <a class="btn btn-primary btn-sm wc-predict" href="{% url 'predictions:match_detail' match_id=m.id %}">Predict</a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p class="muted">
+      {% if search_query %}No World Cup matches match “{{ search_query }}”.{% else %}No World Cup fixtures. Mark matches as World Cup in admin or run <code>python manage.py load_wc2026_fixtures --replace-wc</code>.{% endif %}
+    </p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Reference sources · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Stats, news & provenance</h1>
+  <p class="lede">
+    These are the tiers we design around when curating <strong>digests</strong> in admin and when
+    interpreting model output. Automated ingestion must follow each publisher’s
+    <strong>terms of use</strong> and <strong>robots.txt</strong>; prefer APIs and licensed feeds where they exist.
+  </p>
+</section>
+
+{% for cat in categories %}
+<section class="card source-block" id="{{ cat.slug }}">
+  <h2>{{ cat.title }}</h2>
+  <ul class="source-list">
+    {% for e in cat.entries %}
+      <li>
+        <a href="{{ e.url }}" rel="noopener noreferrer">{{ e.name }}</a>
+        {% if e.description %}
+          <span class="source-desc">— {{ e.description }}</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+{% endblock %}

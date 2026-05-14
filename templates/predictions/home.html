@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Rounds · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Explore rounds and fixtures</h1>
+  <p class="lede">
+    Each match keeps a <strong>timeline of prediction snapshots</strong>. When the tournament is live,
+    update scores, injuries, and news in admin — then re-run the DeepSeek agent to refresh the forecast,
+    confidence, and an explicit <em>why it moved</em> note.
+    See the <a href="{% url 'predictions:sources' %}">reference source list</a> we align digests with,
+    or open the <a href="{% url 'predictions:fixtures_hub' %}">fixtures hub</a> to search by country, FIFA code, group (A–L), or keyword.
+  </p>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Rounds</h2>
+    {% if rounds %}
+      <ul class="list">
+        {% for r in rounds %}
+          <li>
+            <a href="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }}</a>
+            <span class="muted">{{ r.match_count }} matches</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No matches yet. Run <code>python manage.py seed_demo</code> then reload.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h2>Upcoming (sample)</h2>
+    {% if upcoming %}
+      <ul class="list">
+        {% for m in upcoming %}
+          <li>
+            <a href="{% url 'predictions:match_detail' match_id=m.id %}">
+              {{ m.home_team.code }} vs {{ m.away_team.code }}
+            </a>
+            {% if m.latest_prediction %}
+              <span class="pred-inline">{{ m.latest_prediction.scoreline_label }}</span>
+              <span class="muted small">{{ m.latest_prediction.confidence }}%</span>
+            {% endif %}
+            <span class="muted">{{ m.round_name }}</span>
+            {% if m.pred_scorers_one_line %}
+              <div class="scorer-blurb muted small">{{ m.pred_scorers_one_line }}</div>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">Seed data to see fixtures here.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

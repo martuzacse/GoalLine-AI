@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}World Cup Predictions{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="{% url 'predictions:home' %}">WC Predict</a>
+      <nav class="nav">
+        <a href="{% url 'predictions:home' %}">Rounds</a>
+        <a href="{% url 'predictions:fixtures_hub' %}">Fixtures</a>
+        <a href="{% url 'predictions:sources' %}">Sources</a>
+        <a href="/admin/">Admin</a>
+      </nav>
+    </div>
+  </header>
+  {% if messages %}
+    <div class="wrap messages">
+      {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer wrap">
+    <p>Predictions are experimental and not betting advice. Wire your own data sources and review model output.</p>
+  </footer>
+</body>
+</html>

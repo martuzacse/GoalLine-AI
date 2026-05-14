@@ -1,0 +1,62 @@
+{
+  "BRA": [
+    {"name": "Alisson", "position": "GK", "shirt": 1, "club": "Liverpool", "recent_club_scores": "Last 5 club: W W D W W (GF-GA 12-4)", "performance_summary": "High save volume; strong distribution under pressure.", "stats_snapshot": {"nt_last5": "WDWWW", "clean_sheets_club_season": 14}},
+    {"name": "Ederson", "position": "GK", "shirt": 23, "club": "Manchester City", "recent_club_scores": "Last 5 club: W L W W D (9-6)", "performance_summary": "Footwork elite; fewer shot-stopping volume than starter.", "stats_snapshot": {"pass_accuracy": "92%"}},
+    {"name": "Marquinhos", "position": "DF", "shirt": 4, "club": "Paris Saint-Germain", "recent_club_scores": "Last 5 club: W W W D W (10-5)", "performance_summary": "Organizes line; aerials solid.", "stats_snapshot": {"interceptions_last5": 9}},
+    {"name": "Danilo", "position": "DF", "shirt": 2, "club": "Juventus", "recent_club_scores": "Last 5 club: D W W L W (7-6)", "performance_summary": "Versatile full-back; minutes managed late season.", "stats_snapshot": {"apps": 24}},
+    {"name": "Bruno Guimaraes", "position": "MF", "shirt": 8, "club": "Newcastle United", "recent_club_scores": "Last 5 club: W W L W W (11-7)", "performance_summary": "Progressive passing and duels; key link player.", "stats_snapshot": {"goals_season": 6, "assists_season": 8}},
+    {"name": "Casemiro", "position": "MF", "shirt": 5, "club": "Manchester United", "recent_club_scores": "Last 5 club: L W D L W (8-9)", "performance_summary": "Physical presence; occasional discipline risk.", "stats_snapshot": {"yellows_last10": 4}},
+    {"name": "Vinicius Junior", "position": "FW", "shirt": 7, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W W W D W (14-5)", "performance_summary": "Primary carrier; elite 1v1 threat.", "stats_snapshot": {"goals_season": 18, "xg_trend": "above baseline"}},
+    {"name": "Rodrygo", "position": "FW", "shirt": 11, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W D W W L (10-6)", "performance_summary": "Finishing streaky but high involvement in the final third.", "stats_snapshot": {"goals_last8": 5}}
+  ],
+  "ARG": [
+    {"name": "Emiliano Martinez", "position": "GK", "shirt": 23, "club": "Aston Villa", "recent_club_scores": "Last 5 club: W W L W W (10-6)", "performance_summary": "Penalty-saving reputation; aggressive sweeping.", "stats_snapshot": {"psxg_plus_minus": "+0.4"}},
+    {"name": "Cristian Romero", "position": "DF", "shirt": 13, "club": "Tottenham Hotspur", "recent_club_scores": "Last 5 club: W D W W L (9-7)", "performance_summary": "Front-foot defender; injury management key.", "stats_snapshot": {"tackles_last5": 12}},
+    {"name": "Nicolas Otamendi", "position": "DF", "shirt": 19, "club": "Benfica", "recent_club_scores": "Last 5 club: W W W D W (8-3)", "performance_summary": "Experience leader; slower in wide spaces.", "stats_snapshot": {"minutes": 2800}},
+    {"name": "Alexis Mac Allister", "position": "MF", "shirt": 20, "club": "Liverpool", "recent_club_scores": "Last 5 club: W W W D W (13-6)", "performance_summary": "Pressing midfielder with goal threat from late runs.", "stats_snapshot": {"goals_season": 8}},
+    {"name": "Enzo Fernandez", "position": "MF", "shirt": 24, "club": "Chelsea", "recent_club_scores": "Last 5 club: L W W D W (9-8)", "performance_summary": "Progressive passer; workload high.", "stats_snapshot": {"key_passes_last5": 11}},
+    {"name": "Rodrigo De Paul", "position": "MF", "shirt": 7, "club": "Atletico Madrid", "recent_club_scores": "Last 5 club: W D W W W (7-4)", "performance_summary": "Connector between lines; set-piece service.", "stats_snapshot": {"assists_nt_last10": 3}},
+    {"name": "Lionel Messi", "position": "FW", "shirt": 10, "club": "Inter Miami", "recent_club_scores": "Last 5 club: W W W D W (12-5)", "performance_summary": "Chance creation elite; minutes curated in MLS blocks.", "stats_snapshot": {"goals_plus_assists_last10": 12}},
+    {"name": "Julian Alvarez", "position": "FW", "shirt": 9, "club": "Atletico Madrid", "recent_club_scores": "Last 5 club: W W L W W (11-6)", "performance_summary": "High work rate forward; finishing efficient inside the box.", "stats_snapshot": {"xg_per90": "0.55"}}
+  ],
+  "USA": [
+    {"name": "Matt Turner", "position": "GK", "shirt": 1, "club": "Crystal Palace", "recent_club_scores": "Last 5 club: D W L W W (7-6)", "performance_summary": "Shot-stopping flashes; distribution improving.", "stats_snapshot": {"clean_sheets_last10": 3}},
+    {"name": "Chris Richards", "position": "DF", "shirt": 3, "club": "Crystal Palace", "recent_club_scores": "Last 5 club: W D W L W (6-6)", "performance_summary": "Athletic CB minutes growing.", "stats_snapshot": {"aerial_win_rate": "62%"}},
+    {"name": "Antonee Robinson", "position": "DF", "shirt": 5, "club": "Fulham", "recent_club_scores": "Last 5 club: W W D W L (8-7)", "performance_summary": "Two-way left back; carries progression.", "stats_snapshot": {"progressive_carries_last5": 14}},
+    {"name": "Tyler Adams", "position": "MF", "shirt": 4, "club": "AFC Bournemouth", "recent_club_scores": "Last 5 club: W L W D W (7-6)", "performance_summary": "Ball-winner when fit; availability variable.", "stats_snapshot": {"pressures_last5": 58}},
+    {"name": "Weston McKennie", "position": "MF", "shirt": 8, "club": "Leeds United", "recent_club_scores": "Last 5 club: W W W D L (10-7)", "performance_summary": "Late runs into the box; goal threat from midfield.", "stats_snapshot": {"goals_season": 7}},
+    {"name": "Christian Pulisic", "position": "FW", "shirt": 10, "club": "AC Milan", "recent_club_scores": "Last 5 club: W W D W W (11-5)", "performance_summary": "Primary creator; best in half-space isolations.", "stats_snapshot": {"goals_season": 14}},
+    {"name": "Gio Reyna", "position": "FW", "shirt": 7, "club": "Nottingham Forest", "recent_club_scores": "Last 5 club: L W W D W (8-7)", "performance_summary": "Chance creation in pockets; fitness tracking.", "stats_snapshot": {"xa_last8": "high variance"}},
+    {"name": "Folarin Balogun", "position": "FW", "shirt": 20, "club": "AS Monaco", "recent_club_scores": "Last 5 club: W D L W W (9-6)", "performance_summary": "Movement-led finisher; streaky conversion.", "stats_snapshot": {"goals_last10": 6}}
+  ],
+  "MEX": [
+    {"name": "Guillermo Ochoa", "position": "GK", "shirt": 13, "club": "AVS", "recent_club_scores": "Last 5 club: D L W D W (6-7)", "performance_summary": "Experience; reflex shot-stopping still flashes.", "stats_snapshot": {"saves_last5": 17}},
+    {"name": "Johan Vasquez", "position": "DF", "shirt": 5, "club": "Genoa", "recent_club_scores": "Last 5 club: W D W L D (5-6)", "performance_summary": "Left-footed CB; progressive carries limited.", "stats_snapshot": {"blocks_last5": 9}},
+    {"name": "Edson Alvarez", "position": "MF", "shirt": 4, "club": "West Ham United", "recent_club_scores": "Last 5 club: W L W D W (7-7)", "performance_summary": "Anchor six; discipline and fouls monitored.", "stats_snapshot": {"tackles_last5": 15}},
+    {"name": "Luis Chavez", "position": "MF", "shirt": 24, "club": "Dynamo Moscow", "recent_club_scores": "Last 5 club: W W D L W (8-6)", "performance_summary": "Set-piece shooting threat from distance.", "stats_snapshot": {"shots_from_distance_last10": 12}},
+    {"name": "Hirving Lozano", "position": "FW", "shirt": 22, "club": "PSV Eindhoven", "recent_club_scores": "Last 5 club: W W W D W (13-6)", "performance_summary": "Vertical winger; isolation threat.", "stats_snapshot": {"dribbles_completed_last5": 11}},
+    {"name": "Alexis Vega", "position": "FW", "shirt": 10, "club": "Toluca", "recent_club_scores": "Last 5 club: W D W W L (9-7)", "performance_summary": "Left-footed finisher; fitness spikes.", "stats_snapshot": {"goals_last8": 4}},
+    {"name": "Santiago Gimenez", "position": "FW", "shirt": 11, "club": "AC Milan", "recent_club_scores": "Last 5 club: W W L D W (10-7)", "performance_summary": "Penalty-box runs; conversion sensitive to service.", "stats_snapshot": {"goals_last10": 5}},
+    {"name": "Jesus Gallardo", "position": "DF", "shirt": 23, "club": "Tigres UANL", "recent_club_scores": "Last 5 club: D W W L W (7-6)", "performance_summary": "Experienced wide defender; crossing volume.", "stats_snapshot": {"crosses_last5": 13}}
+  ],
+  "FRA": [
+    {"name": "Mike Maignan", "position": "GK", "shirt": 16, "club": "AC Milan", "recent_club_scores": "Last 5 club: W W D W W (9-4)", "performance_summary": "Elite shot-stopper; aggressive line.", "stats_snapshot": {"clean_sheets_last10": 5}},
+    {"name": "William Saliba", "position": "DF", "shirt": 2, "club": "Arsenal", "recent_club_scores": "Last 5 club: W W W D W (10-4)", "performance_summary": "Dominant duels; progressive stepping.", "stats_snapshot": {"aerials_won_last5": 14}},
+    {"name": "Dayot Upamecano", "position": "DF", "shirt": 4, "club": "Bayern Munich", "recent_club_scores": "Last 5 club: W L W W D (11-6)", "performance_summary": "Pace recovery; occasional rash challenges.", "stats_snapshot": {"tackles_last5": 9}},
+    {"name": "Aurelien Tchouameni", "position": "MF", "shirt": 8, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W W D W W (8-5)", "performance_summary": "Screening six; ball-winning range.", "stats_snapshot": {"interceptions_last5": 10}},
+    {"name": "Eduardo Camavinga", "position": "MF", "shirt": 6, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W D W W L (9-6)", "performance_summary": "Line-breaking carries; discipline watch.", "stats_snapshot": {"progressive_carries_last5": 16}},
+    {"name": "Antoine Griezmann", "position": "FW", "shirt": 7, "club": "Atletico Madrid", "recent_club_scores": "Last 5 club: W W W D W (10-5)", "performance_summary": "Chance creation hub; two-footed finisher.", "stats_snapshot": {"xa_last10": "high"}},
+    {"name": "Kylian Mbappe", "position": "FW", "shirt": 10, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W W L W W (13-6)", "performance_summary": "Primary finisher; isolation threat central and left.", "stats_snapshot": {"goals_season": 28}},
+    {"name": "Ousmane Dembele", "position": "FW", "shirt": 11, "club": "Paris Saint-Germain", "recent_club_scores": "Last 5 club: W D W W W (12-5)", "performance_summary": "1v1 wide threat; end product improved.", "stats_snapshot": {"assists_season": 12}}
+  ],
+  "GER": [
+    {"name": "Manuel Neuer", "position": "GK", "shirt": 1, "club": "Bayern Munich", "recent_club_scores": "Last 5 club: W W D W W (11-4)", "performance_summary": "Sweeping keeper; leadership.", "stats_snapshot": {"clean_sheets_last10": 4}},
+    {"name": "Joshua Kimmich", "position": "DF", "shirt": 6, "club": "Bayern Munich", "recent_club_scores": "Last 5 club: W W W D W (12-5)", "performance_summary": "Hybrid RB/DM; set-piece delivery elite.", "stats_snapshot": {"key_passes_last5": 13}},
+    {"name": "Antonio Rudiger", "position": "DF", "shirt": 2, "club": "Real Madrid", "recent_club_scores": "Last 5 club: W L W W D (8-5)", "performance_summary": "Aggressive defending; carries booking load.", "stats_snapshot": {"yellows_last10": 3}},
+    {"name": "Ilkay Gundogan", "position": "MF", "shirt": 21, "club": "Manchester City", "recent_club_scores": "Last 5 club: W W D W W (10-5)", "performance_summary": "Late runs; tempo control in possession.", "stats_snapshot": {"goals_season": 6}},
+    {"name": "Jamal Musiala", "position": "MF", "shirt": 10, "club": "Bayern Munich", "recent_club_scores": "Last 5 club: W W W L W (14-6)", "performance_summary": "Primary progressive threat; tight-space dribbling.", "stats_snapshot": {"takeons_last5": 18}},
+    {"name": "Florian Wirtz", "position": "MF", "shirt": 7, "club": "Liverpool", "recent_club_scores": "Last 5 club: W D W W W (11-6)", "performance_summary": "Chance creation volume; pressing fit evolving.", "stats_snapshot": {"assists_season": 11}},
+    {"name": "Kai Havertz", "position": "FW", "shirt": 9, "club": "Arsenal", "recent_club_scores": "Last 5 club: W W D W W (10-4)", "performance_summary": "False-nine link; aerial presence in box.", "stats_snapshot": {"goals_season": 15}},
+    {"name": "Serge Gnabry", "position": "FW", "shirt": 20, "club": "Bayern Munich", "recent_club_scores": "Last 5 club: W L W D W (9-7)", "performance_summary": "Cut-ins from right; finishing streaky.", "stats_snapshot": {"shots_last5": 12}}
+  ]
+}
