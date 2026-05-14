@@ -34,8 +34,13 @@ SECRET_KEY = os.environ.get(
 _default_debug = "False" if os.environ.get("RENDER") else "True"
 DEBUG = os.environ.get("DEBUG", _default_debug).lower() in ("1", "true", "yes")
 
-# Serve collected static in production. Do not rely only on RENDER (some stacks omit it).
-USE_WHITENOISE = (not DEBUG) or bool(os.environ.get("RENDER"))
+# Serve collected static in production. Render+Neon always has DATABASE_URL; DEBUG=True would
+# otherwise disable USE_WHITENOISE and leave /static/ as 404 with gunicorn.
+USE_WHITENOISE = (
+    (not DEBUG)
+    or bool(os.environ.get("RENDER"))
+    or bool(os.environ.get("DATABASE_URL"))
+)
 _default_hosts = "localhost,127.0.0.1"
 if os.environ.get("RENDER"):
     _default_hosts = f"localhost,127.0.0.1,{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}"

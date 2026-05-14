@@ -22,9 +22,9 @@ from django.core.management import call_command
 if os.environ.get("RENDER") and os.environ.get("AUTO_MIGRATE", "1").lower() in ("1", "true", "yes"):
     call_command("migrate", "--noinput")
 
-# Collect static when missing: production (DEBUG off) even if RENDER is unset, or any Render deploy.
+# Collect static when missing: any Postgres deploy (DATABASE_URL), Render, or DEBUG off.
 if os.environ.get("AUTO_COLLECTSTATIC", "1").lower() in ("1", "true", "yes"):
-    if os.environ.get("RENDER") or not settings.DEBUG:
+    if os.environ.get("DATABASE_URL") or os.environ.get("RENDER") or not settings.DEBUG:
         marker = settings.STATIC_ROOT / "css" / "app.css"
         if not marker.exists():
             call_command("collectstatic", "--noinput", verbosity=0)
