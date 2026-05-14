@@ -31,9 +31,15 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# Comma-separated hostnames; on Render set e.g. your-app.onrender.com or use RENDER_EXTERNAL_HOSTNAME
+_default_hosts = "localhost,127.0.0.1"
+if os.environ.get("RENDER"):
+    _default_hosts = f"localhost,127.0.0.1,{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}"
+ALLOWED_HOSTS = [
+    h.strip() for h in os.environ.get("ALLOWED_HOSTS", _default_hosts).split(",") if h.strip()
+]
 
 
 # Application definition
