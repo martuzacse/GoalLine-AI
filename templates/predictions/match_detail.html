@@ -14,6 +14,64 @@
   </p>
 </section>
 
+{% if match.prematch_brief %}
+<section class="card card-highlight">
+  <h2>Prematch brief</h2>
+  <p class="prose">{{ match.prematch_brief }}</p>
+</section>
+{% endif %}
+
+{% if match.lineup_home or match.lineup_away %}
+<section class="card">
+  <h2>Lineups (curated)</h2>
+  <div class="lineup-grid">
+    <div>
+      <h3 class="h3">{{ match.home_team.code }}</h3>
+      {% if match.lineup_home %}
+        <ol class="lineup-list">
+          {% for row in match.lineup_home %}
+            <li>{% if row.player %}{{ row.player }}{% elif row.name %}{{ row.name }}{% else %}{{ row }}{% endif %}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="muted">—</p>
+      {% endif %}
+    </div>
+    <div>
+      <h3 class="h3">{{ match.away_team.code }}</h3>
+      {% if match.lineup_away %}
+        <ol class="lineup-list">
+          {% for row in match.lineup_away %}
+            <li>{% if row.player %}{{ row.player }}{% elif row.name %}{{ row.name }}{% else %}{{ row }}{% endif %}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="muted">—</p>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if events %}
+<section class="card">
+  <h2>Match timeline</h2>
+  <ul class="event-timeline">
+    {% for ev in events %}
+      <li class="event-row event-{{ ev.event_type }}">
+            <span class="event-minute">{% if ev.minute is not None %}{{ ev.minute }}′{% else %}?{% endif %}</span>
+        <span class="event-badge">{{ ev.get_event_type_display }}</span>
+        {% if ev.side != "neutral" %}
+          <span class="muted small">{{ ev.get_side_display }}</span>
+        {% endif %}
+        <span class="event-headline">{{ ev.headline }}</span>
+        {% if ev.detail %}<p class="event-detail muted small">{{ ev.detail }}</p>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 <section class="grid two">
   <div class="card">
     <h2>Actions</h2>
@@ -46,6 +104,53 @@
     {% endif %}
   </div>
 </section>
+
+{% if diff and latest %}
+<section class="card">
+  <h2>Snapshot diff (latest vs prior)</h2>
+  {% if prev_snapshot %}
+    <p>
+      Scoreline:
+      <span class="scoreline sm">{{ diff.scoreline_prev|default:"—" }}</span>
+      →
+      <span class="scoreline sm">{{ diff.scoreline_cur }}</span>
+    </p>
+    <p>
+      Confidence:
+      {{ diff.confidence_prev }}% → <strong>{{ diff.confidence_cur }}%</strong>
+    </p>
+    {% if diff.factors_new_keys %}
+      <p><strong>New factor keys:</strong> {% for k in diff.factors_new_keys %}<code>{{ k }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+    {% if diff.factors_changed %}
+      <p><strong>Changed factors:</strong> {% for k in diff.factors_changed %}<code>{{ k }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+  {% else %}
+    <p class="muted">Only one snapshot so far — run again after news or lineup edits to populate a delta.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if scenario and latest %}
+<section class="card">
+  <h2>What-if scoreline</h2>
+  <p class="muted small">Query params <code>what_home</code> and <code>what_away</code> — compare to the latest model forecast (not recomputed by the model).</p>
+  <p>
+    Hypothesis: <span class="scoreline sm">{{ scenario.0 }}–{{ scenario.1 }}</span>
+    vs model: <span class="scoreline sm">{{ latest.pred_home_goals }}–{{ latest.pred_away_goals }}</span>
+  </p>
+  <p class="muted small">
+    <a href="{% url 'predictions:match_detail' match_id=match.id %}">Clear what-if</a>
+  </p>
+</section>
+{% endif %}
+
+{% if not scenario %}
+<section class="card">
+  <h2>Try a what-if (URL)</h2>
+  <p class="muted small">Append <code>?what_home=2&amp;what_away=1</code> to this page to pin a hypothetical result next to the latest forecast.</p>
+</section>
+{% endif %}
 
 <section class="card">
   <h2>Predicted scorers (latest)</h2>

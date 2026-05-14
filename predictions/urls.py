@@ -6,6 +6,12 @@ app_name = "predictions"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("search/", views.global_search, name="search"),
+    path("player/<int:player_id>/", views.player_detail, name="player_detail"),
+    path("team/<str:team_code>/", views.team_detail, name="team_detail"),
+    path("wc/groups/", views.wc_groups_index, name="wc_groups"),
+    path("wc/group/<str:letter>/", views.wc_group_detail, name="wc_group"),
+    path("insights/", views.insights_hub, name="insights"),
     path("fixtures/", views.fixtures_hub, name="fixtures_hub"),
     path("sources/", views.sources, name="sources"),
     path("round/<str:round_name>/", views.round_detail, name="round"),

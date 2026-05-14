@@ -52,8 +52,7 @@ a:hover {
   letter-spacing: 0.02em;
   color: var(--text);
 }
-  padding-top: 12px;
-}
+
 .flash {
   padding: 10px 14px;
   border-radius: var(--radius);
@@ -817,6 +816,116 @@ details summary {
 }
 .table-row-click:hover {
   background: rgba(124, 156, 255, 0.1);
+}
+
+/* Groups, insights, match enrichments */
+.group-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.table-standings td:nth-child(n + 2),
+.table-standings th:nth-child(n + 2) {
+  text-align: right;
+}
+.table-standings td:first-child,
+.table-standings th:first-child {
+  min-width: 10rem;
+}
+.search-page-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.search-page-input {
+  flex: 1 1 220px;
+  min-width: 160px;
+}
+.card-highlight {
+  border-color: rgba(94, 234, 212, 0.35);
+  background: linear-gradient(180deg, rgba(94, 234, 212, 0.08), rgba(18, 28, 47, 0.85));
+}
+.lineup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+.lineup-list {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.lineup-list li {
+  margin: 0.35rem 0;
+}
+.event-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.event-row {
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(36, 48, 74, 0.85);
+}
+.event-row:last-child {
+  border-bottom: 0;
+}
+.event-minute {
+  display: inline-block;
+  min-width: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.event-badge {
+  display: inline-block;
+  margin: 0 8px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.event-headline {
+  font-weight: 600;
+}
+.event-detail {
+  margin: 6px 0 0 2.5rem;
+}
+.fixture-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.fixture-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed rgba(36, 48, 74, 0.85);
+}
+.fixture-row:last-child {
+  border-bottom: 0;
+}
+.fixture-meta {
+  text-align: right;
+  min-width: 5rem;
+}
+.list-tight li {
+  padding: 6px 0;
+}
+.kv-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.kv-list li {
+  margin: 0.4rem 0;
+}
+.pill-warn {
+  border-color: rgba(251, 113, 133, 0.55);
+  color: var(--danger);
 }
 
 @media (max-width: 720px) {

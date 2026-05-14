@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Group {{ letter }} · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="crumb"><a href="{% url 'predictions:wc_groups' %}">← All groups</a></p>
+  <h1>Group {{ letter }}</h1>
+  <p class="lede">Table from DB results; roster from seeded group list.</p>
+</section>
+
+<section class="card">
+  <h2>Standings</h2>
+  {% if standings %}
+    <div class="table-scroll">
+      <table class="table table-standings">
+        <thead>
+          <tr>
+            <th>Team</th>
+            <th>P</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GF</th>
+            <th>GA</th>
+            <th>GD</th>
+            <th>Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in standings %}
+            <tr>
+              <td>
+                {% if row.team %}
+                  <a href="{% url 'predictions:team_detail' team_code=row.code %}">{{ row.name }}</a>
+                  <span class="muted small">({{ row.code }})</span>
+                {% else %}
+                  {{ row.name }} <span class="muted small">({{ row.code }})</span>
+                {% endif %}
+              </td>
+              <td>{{ row.played }}</td>
+              <td>{{ row.won }}</td>
+              <td>{{ row.drawn }}</td>
+              <td>{{ row.lost }}</td>
+              <td>{{ row.goals_for }}</td>
+              <td>{{ row.goals_against }}</td>
+              <td>{% if row.goal_diff > 0 %}+{% endif %}{{ row.goal_diff }}</td>
+              <td><strong>{{ row.points }}</strong></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No standings data yet (empty group or no finished matches).</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Group fixtures</h2>
+  {% if fixtures %}
+    <ul class="fixture-list">
+      {% for m in fixtures %}
+        <li class="fixture-row">
+          <div>
+            <a href="{% url 'predictions:match_detail' match_id=m.id %}">{{ m.home_team.code }} vs {{ m.away_team.code }}</a>
+            <div class="muted small">{{ m.round_name }} · {{ m.get_status_display }}</div>
+          </div>
+          <div class="fixture-meta">
+            <span class="muted small">{{ m.kickoff|default:"TBC" }}</span>
+            {% if m.latest_prediction %}
+              <div class="pred-cell">
+                <span class="scoreline sm">{{ m.latest_prediction.pred_home_goals }}–{{ m.latest_prediction.pred_away_goals }}</span>
+              </div>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No group fixtures found for this letter (check <code>round_name</code> prefix <code>Group {{ letter }}</code>).</p>
+  {% endif %}
+</section>
+{% endblock %}

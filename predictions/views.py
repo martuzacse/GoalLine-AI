@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from django.conf import settings
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from agents.deepseek import DeepSeekError
-from matches.models import Match
+from matches.models import Match, MatchEvent, Player, Team
 from matches.search import filter_matches_by_search
+from matches.standings import standings_for_group, upcoming_group_matches
+from matches.wc2026_data import GROUPS
+from predictions.analysis import calibration_rows, snapshot_diff
 from predictions.models import PredictionSnapshot
 from predictions.services import dry_run_stub_prediction, run_match_prediction
 from predictions.source_catalog import SOURCE_CATEGORIES
@@ -149,7 +152,7 @@ def round_detail(request: HttpRequest, round_name: str) -> HttpResponse:
 
 def match_detail(request: HttpRequest, match_id: int) -> HttpResponse:
     match = get_object_or_404(
-        Match.objects.select_related("home_team", "away_team"),
+        Match.objects.select_related("home_team", "away_team").prefetch_related("events"),
         pk=match_id,
     )
     snapshots = list(
@@ -157,6 +160,15 @@ def match_detail(request: HttpRequest, match_id: int) -> HttpResponse:
     )
     snapshots.sort(key=lambda s: s.created_at, reverse=True)
     latest = snapshots[0] if snapshots else None
+    prev_snap = snapshots[1] if len(snapshots) > 1 else None
+    diff = snapshot_diff(prev_snap, latest)
+    events = list(match.events.all())
+    scenario = None
+    wh, wa = request.GET.get("what_home", ""), request.GET.get("what_away", "")
+    if wh.isdigit() and wa.isdigit():
+        a, b = int(wh), int(wa)
+        if 0 <= a <= 20 and 0 <= b <= 20:
+            scenario = (a, b)
     return render(
         request,
         "predictions/match_detail.html",
@@ -164,7 +176,101 @@ def match_detail(request: HttpRequest, match_id: int) -> HttpResponse:
             "match": match,
             "snapshots": snapshots,
             "latest": latest,
+            "prev_snapshot": prev_snap,
+            "diff": diff,
+            "events": events,
+            "scenario": scenario,
             "debug": settings.DEBUG,
+        },
+    )
+
+
+def global_search(request: HttpRequest) -> HttpResponse:
+    q = (request.GET.get("q") or "").strip()
+    teams: list[Team] = []
+    players: list[Player] = []
+    matches: list[Match] = []
+    if q:
+        teams = list(Team.objects.filter(Q(name__icontains=q) | Q(code__icontains=q)).order_by("name")[:24])
+        players = list(
+            Player.objects.select_related("team")
+            .filter(
+                Q(name__icontains=q)
+                | Q(club__icontains=q)
+                | Q(team__name__icontains=q)
+                | Q(team__code__icontains=q)
+            )
+            .order_by("team__name", "name")[:24]
+        )
+        mq = Match.objects.select_related("home_team", "away_team")
+        mq = filter_matches_by_search(mq, q)
+        matches = list(mq.order_by("-kickoff", "-id")[:30])
+    return render(
+        request,
+        "predictions/search.html",
+        {"search_query": q, "teams": teams, "players": players, "matches": matches},
+    )
+
+
+def player_detail(request: HttpRequest, player_id: int) -> HttpResponse:
+    player = get_object_or_404(Player.objects.select_related("team"), pk=player_id)
+    return render(request, "predictions/player_detail.html", {"player": player})
+
+
+def team_detail(request: HttpRequest, team_code: str) -> HttpResponse:
+    team = get_object_or_404(Team, code__iexact=team_code.strip())
+    players = list(team.players.all())
+    fixtures = list(
+        Match.objects.filter(Q(home_team=team) | Q(away_team=team))
+        .select_related("home_team", "away_team")
+        .order_by("kickoff", "id")[:36]
+    )
+    _attach_latest_predictions(fixtures)
+    return render(
+        request,
+        "predictions/team_detail.html",
+        {"team": team, "players": players, "fixtures": fixtures},
+    )
+
+
+def wc_groups_index(request: HttpRequest) -> HttpResponse:
+    letters = sorted(GROUPS.keys())
+    return render(request, "predictions/wc_groups.html", {"letters": letters})
+
+
+def wc_group_detail(request: HttpRequest, letter: str) -> HttpResponse:
+    letter = letter.strip().upper()
+    if letter not in GROUPS:
+        return HttpResponseBadRequest("Unknown group.")
+    standings = standings_for_group(letter)
+    fixtures = upcoming_group_matches(letter, limit=48)
+    _attach_latest_predictions(fixtures)
+    return render(
+        request,
+        "predictions/wc_group_detail.html",
+        {"letter": letter, "standings": standings, "fixtures": fixtures},
+    )
+
+
+def insights_hub(request: HttpRequest) -> HttpResponse:
+    cal = calibration_rows(limit=100)
+    missing_pred = Match.objects.annotate(pc=Count("prediction_snapshots")).filter(pc=0).count()
+    total_matches = Match.objects.count()
+    total_snaps = PredictionSnapshot.objects.count()
+    finished_with_score = Match.objects.filter(
+        status=Match.Status.FINISHED,
+        home_score__isnull=False,
+        away_score__isnull=False,
+    ).count()
+    return render(
+        request,
+        "predictions/insights.html",
+        {
+            "calibration": cal,
+            "missing_pred": missing_pred,
+            "total_matches": total_matches,
+            "total_snaps": total_snaps,
+            "finished_with_score": finished_with_score,
         },
     )
 

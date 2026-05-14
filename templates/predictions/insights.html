@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Insights · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Insights &amp; calibration</h1>
+  <p class="lede">Coverage counts and finished matches where the latest snapshot missed the mark on goals (largest errors first).</p>
+</section>
+
+<section class="stats-strip card card-tight">
+  <div class="stat-pill">
+    <span class="stat-value">{{ total_matches }}</span>
+    <span class="stat-label">Matches</span>
+  </div>
+  <div class="stat-pill">
+    <span class="stat-value">{{ finished_with_score }}</span>
+    <span class="stat-label">Finished + score</span>
+  </div>
+  <div class="stat-pill">
+    <span class="stat-value">{{ total_snaps }}</span>
+    <span class="stat-label">Snapshots</span>
+  </div>
+  <div class="stat-pill" title="Matches with zero prediction rows">
+    <span class="stat-value">{{ missing_pred }}</span>
+    <span class="stat-label">No prediction</span>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Calibration (goal error)</h2>
+  <p class="muted small">Error = |pred home − actual home| + |pred away − actual away| on the <em>latest</em> snapshot before/after kickoff is not distinguished here — refine in admin workflows if needed.</p>
+  {% if calibration %}
+    <div class="table-scroll">
+      <table class="table table-standings">
+        <thead>
+          <tr>
+            <th>Match</th>
+            <th>Actual</th>
+            <th>Pred</th>
+            <th>Conf.</th>
+            <th>Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in calibration %}
+            <tr>
+              <td><a href="{% url 'predictions:match_detail' match_id=row.match_id %}">{{ row.label }}</a></td>
+              <td>{{ row.actual_home }}–{{ row.actual_away }}</td>
+              <td>{{ row.pred_home }}–{{ row.pred_away }}</td>
+              <td>{{ row.confidence }}%</td>
+              <td>{% if row.goal_error > 2 %}<span class="pill pill-warn">{{ row.goal_error }}</span>{% else %}<strong>{{ row.goal_error }}</strong>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="muted">No finished scored matches with a snapshot yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

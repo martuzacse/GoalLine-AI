@@ -32,7 +32,7 @@
   <details class="explore-details" open>
     <summary class="explore-summary">Quick navigation</summary>
     <div class="explore-body">
-      <p class="muted small">Jump straight to a competition round or filter the World Cup hub by group letter.</p>
+      <p class="muted small">Jump straight to a competition round, open <a href="{% url 'predictions:wc_groups' %}">group standings</a>, or filter the World Cup hub by group letter.</p>
       <div class="explore-row">
         <label class="toolbar-label">
           <span class="toolbar-label-text">Go to round</span>
@@ -46,7 +46,7 @@
       </div>
       <div class="chip-row chip-row-tight">
         {% for letter in wc_group_letters %}
-          <a class="chip chip-wc" href="{% url 'predictions:fixtures_hub' %}?tab=worldcup&q=Group+{{ letter }}">WC group {{ letter }}</a>
+          <a class="chip chip-wc" href="{% url 'predictions:wc_group' letter=letter %}">WC group {{ letter }}</a>
         {% endfor %}
       </div>
     </div>

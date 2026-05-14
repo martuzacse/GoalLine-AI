@@ -84,6 +84,20 @@ class Match(models.Model):
         blank=True,
         help_text="Short label for the fixtures strip (e.g. Premier League, MLS).",
     )
+    lineup_home = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='Optional XI: list of strings or objects, e.g. ["#9 R. Lewandowski", …]',
+    )
+    lineup_away = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Optional XI for the away side (same shape as lineup_home).",
+    )
+    prematch_brief = models.TextField(
+        blank=True,
+        help_text="Curated one-screen brief (form, injuries, stakes) shown on the public match page.",
+    )
 
     class Meta:
         ordering = ["kickoff", "id"]
@@ -91,3 +105,36 @@ class Match(models.Model):
 
     def __str__(self) -> str:
         return f"{self.home_team.code} vs {self.away_team.code} ({self.round_name})"
+
+
+class MatchEvent(models.Model):
+    """Curated timeline rows (goals, cards, subs, notes) for richer match pages."""
+
+    class EventType(models.TextChoices):
+        GOAL = "goal", "Goal"
+        OWN_GOAL = "own_goal", "Own goal"
+        CARD_YELLOW = "card_yellow", "Yellow card"
+        CARD_RED = "card_red", "Red card"
+        SUB = "sub", "Substitution"
+        PENALTY = "penalty", "Penalty"
+        NOTE = "note", "Note"
+        OTHER = "other", "Other"
+
+    class Side(models.TextChoices):
+        HOME = "home", "Home"
+        AWAY = "away", "Away"
+        NEUTRAL = "neutral", "Neutral"
+
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="events")
+    minute = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Match minute, if known.")
+    event_type = models.CharField(max_length=20, choices=EventType.choices, default=EventType.NOTE)
+    side = models.CharField(max_length=10, choices=Side.choices, default=Side.NEUTRAL)
+    headline = models.CharField(max_length=200)
+    detail = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["minute", "id"]
+
+    def __str__(self) -> str:
+        mm = f"{self.minute}' " if self.minute is not None else ""
+        return f"{mm}{self.get_event_type_display()}: {self.headline}"

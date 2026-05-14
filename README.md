@@ -1,0 +1,116 @@
+# Football World Cup Prediction (GoalLine-AI)
+
+Django app for **curated match context**, **DeepSeek-powered scoreline forecasts**, and a **public UI** for rounds, fixtures, group tables, search, and light calibration insights. Data lives in your database (Postgres on Neon in production, SQLite locally if you omit `DATABASE_URL`).
+
+Predictions are **experimental** and not betting advice.
+
+## Features
+
+- **Match pages**: prediction snapshot timeline, latest reasoning and factors, optional **prematch brief**, **JSON lineups**, **match events** (timeline), **snapshot diff** vs the previous snapshot, and optional **what-if** query params (`?what_home=2&what_away=1`).
+- **Agent**: “Run DeepSeek agent” from a match page (requires API key). In `DEBUG` mode, a **stub** prediction avoids the API.
+- **Fixtures hub**: World Cup vs current competitions tabs, filters, and search within the hub.
+- **Global search** (`/search/`): teams, players, and matches.
+- **Team & player** pages: squad lists, fixtures, and player narrative fields used by the agent.
+- **World Cup groups** (`/wc/groups/`): **standings** derived from finished group matches in the DB plus a fixture list for that group letter.
+- **Insights** (`/insights/`): coverage counts and a **calibration** table (goal error on latest snapshot vs final score).
+
+## Requirements
+
+- **Python 3.10+** recommended (Django 4.2 per `requirements.txt`).
+- Dependencies are listed in `requirements.txt`.
+
+## Local setup
+
+1. Clone the repo and create a virtualenv.
+
+2. Install dependencies:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Copy environment template and adjust:
+
+   ```bash
+   cp env.example .env
+   ```
+
+   For local SQLite-only dev you can leave `DATABASE_URL` unset; for Postgres set `DATABASE_URL` as in `env.example`.
+
+4. Migrate and run:
+
+   ```bash
+   python manage.py migrate
+   python manage.py runserver
+   ```
+
+5. Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and [http://127.0.0.1:8000/admin/](http://127.0.0.1:8000/admin/) (create a superuser with `python manage.py createsuperuser`).
+
+Press **`/`** in the site (outside inputs) to focus the header search.
+
+## Environment variables
+
+Documented in **`env.example`**. Important entries:
+
+| Variable | Purpose |
+|----------|---------|
+| `DEEPSEEK_API_KEY` | Required for live agent runs |
+| `DEEPSEEK_API_BASE` / `DEEPSEEK_MODEL` | Optional overrides |
+| `DJANGO_SECRET_KEY` | Required in production |
+| `DATABASE_URL` | Postgres (e.g. Neon); omit for default SQLite |
+| `DEBUG`, `ALLOWED_HOSTS` | Standard Django |
+| `AUTO_SEED_DEMO`, `AUTO_LOAD_WC2026` | Control auto seed / WC fixture load on boot (see `env.example`) |
+
+## Useful management commands
+
+| Command | Purpose |
+|---------|---------|
+| `python manage.py migrate` | Apply schema |
+| `python manage.py ensure_initial_data` | Idempotent demo / bootstrap (also referenced from `build.sh` / `start.sh`) |
+| `python manage.py load_wc2026_fixtures --replace-wc` | Load 72 group-stage WC rows from `matches/wc2026_data.py` |
+| `python manage.py import_squad_json --file matches/data/....json` | Import squads after editing JSON |
+| `python manage.py seed_demo` | Demo data (see command help) |
+
+## Production (e.g. Render)
+
+- **Build**: `./build.sh` — installs deps, migrates, optional `ensure_initial_data`, `collectstatic`.
+- **Start**: `./start.sh` — migrate, `ensure_initial_data`, optional `collectstatic`, then Gunicorn.
+
+Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.example`**.
+
+## Project layout (high level)
+
+| Path | Role |
+|------|------|
+| `config/` | Django settings, WSGI, URLs |
+| `matches/` | Teams, players, matches, events, WC data, standings helpers |
+| `predictions/` | Snapshots, views, analysis helpers, agent integration |
+| `templates/` | HTML templates |
+| `static/` | CSS and static assets |
+
+## Main URLs (all under site root)
+
+| Path | Description |
+|------|-------------|
+| `/` | Home / rounds |
+| `/fixtures/` | Fixtures hub |
+| `/search/` | Global search |
+| `/wc/groups/` | Group index |
+| `/wc/group/<A–L>/` | Standings + fixtures for that group |
+| `/insights/` | Insights and calibration table |
+| `/team/<code>/` | Team detail |
+| `/player/<id>/` | Player detail |
+| `/round/<round_name>/` | Round matches |
+| `/match/<id>/` | Match detail and agent actions |
+| `/sources/` | Reference source list |
+| `/admin/` | Django admin |
+
+## Curating richer match pages
+
+In **admin → Matches**, you can set:
+
+- **Prematch brief** (public narrative block).
+- **Lineup home / away**: JSON list of strings (e.g. `"#9 Name"`) or small objects with `player` / `name`.
+- **Match events** (inline): minute, type, side, headline, detail.
+
+Re-run the agent after substantive edits so new **prediction snapshots** and **diffs** reflect your updates.

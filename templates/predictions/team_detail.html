@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }} · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>{{ team.name }}</h1>
+  <p class="lede">Code <strong>{{ team.code }}</strong>{% if team.group_label %} · Group {{ team.group_label }}{% endif %}</p>
+</section>
+
+<section class="card">
+  <h2>Squad</h2>
+  {% if players %}
+    <ul class="list list-tight">
+      {% for p in players %}
+        <li>
+          <a href="{% url 'predictions:player_detail' player_id=p.id %}">{{ p.name }}</a>
+          <span class="muted">{{ p.get_position_display }}{% if p.shirt_number %} · #{{ p.shirt_number }}{% endif %}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No players linked in admin yet.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Fixtures</h2>
+  {% if fixtures %}
+    <ul class="fixture-list">
+      {% for m in fixtures %}
+        <li class="fixture-row">
+          <div>
+            <a href="{% url 'predictions:match_detail' match_id=m.id %}">{{ m.home_team.code }} vs {{ m.away_team.code }}</a>
+            <div class="muted small">{{ m.round_name }}</div>
+          </div>
+          <div class="fixture-meta">
+            <span class="muted small">{{ m.kickoff|default:"TBC" }}</span>
+            {% if m.latest_prediction %}
+              <div class="pred-cell">
+                <span class="scoreline sm">{{ m.latest_prediction.pred_home_goals }}–{{ m.latest_prediction.pred_away_goals }}</span>
+                <span class="muted small">{{ m.latest_prediction.confidence }}%</span>
+              </div>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No fixtures for this team in the database.</p>
+  {% endif %}
+</section>
+{% endblock %}

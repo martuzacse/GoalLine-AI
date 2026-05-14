@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from predictions.models import PredictionSnapshot
 
-from .models import Match, Player, Team
+from .models import Match, MatchEvent, Player, Team
 
 
 class PredictionSnapshotInline(admin.TabularInline):
@@ -10,6 +10,19 @@ class PredictionSnapshotInline(admin.TabularInline):
     extra = 0
     readonly_fields = ("created_at",)
     fields = ("created_at", "pred_home_goals", "pred_away_goals", "confidence", "change_explanation")
+
+
+class MatchEventInline(admin.TabularInline):
+    model = MatchEvent
+    extra = 0
+    fields = ("minute", "event_type", "side", "headline", "detail")
+
+
+@admin.register(MatchEvent)
+class MatchEventAdmin(admin.ModelAdmin):
+    list_display = ("match", "minute", "event_type", "side", "headline")
+    list_filter = ("event_type", "side")
+    search_fields = ("headline", "detail", "match__round_name")
 
 
 @admin.register(Team)
@@ -37,7 +50,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    inlines = [PredictionSnapshotInline]
+    inlines = [MatchEventInline, PredictionSnapshotInline]
     list_display = (
         "round_name",
         "home_team",
@@ -51,3 +64,23 @@ class MatchAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "round_name", "is_world_cup")
     search_fields = ("home_team__name", "away_team__name", "round_name")
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "round_name",
+                    "home_team",
+                    "away_team",
+                    "kickoff",
+                    "status",
+                    "home_score",
+                    "away_score",
+                    "is_world_cup",
+                    "competition_display",
+                )
+            },
+        ),
+        ("Tactics & narrative", {"fields": ("tactical_notes_home", "tactical_notes_away", "external_news_digest", "prematch_brief")}),
+        ("Lineups (JSON lists)", {"fields": ("lineup_home", "lineup_away")}),
+    )

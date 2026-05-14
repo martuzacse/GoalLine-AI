@@ -18,33 +18,26 @@
         <nav class="nav nav-pills" aria-label="Primary">
           <a href="{% url 'predictions:home' %}">Rounds</a>
           <a href="{% url 'predictions:fixtures_hub' %}">Fixtures</a>
+          <a href="{% url 'predictions:wc_groups' %}">Groups</a>
+          <a href="{% url 'predictions:insights' %}">Insights</a>
           <a href="{% url 'predictions:sources' %}">Sources</a>
           <a href="/admin/">Admin</a>
         </nav>
         <form
           class="header-search"
           method="get"
-          action="{% url 'predictions:fixtures_hub' %}"
+          action="{% url 'predictions:search' %}"
           role="search"
-          aria-label="Search fixtures"
+          aria-label="Search teams, players, matches"
         >
-          <label class="sr-only" for="nav-search-q">Search fixtures</label>
-          <select class="header-select" name="tab" aria-label="Fixture scope">
-            {% if request.resolver_match.url_name == 'fixtures_hub' %}
-              <option value="current"{% if request.GET.tab != 'worldcup' %} selected{% endif %}>Current</option>
-              <option value="worldcup"{% if request.GET.tab == 'worldcup' %} selected{% endif %}>World Cup</option>
-            {% else %}
-              <option value="worldcup" selected>World Cup</option>
-              <option value="current">Current</option>
-            {% endif %}
-          </select>
+          <label class="sr-only" for="nav-search-q">Search</label>
           <input
             id="nav-search-q"
             class="header-search-input"
             type="search"
             name="q"
             value="{{ request.GET.q|default_if_none:'' }}"
-            placeholder="Teams, codes, groups A–L…"
+            placeholder="Teams, players, matches…"
             autocomplete="off"
             maxlength="120"
           >

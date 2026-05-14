@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ player.name }} · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="crumb">
+    <a href="{% url 'predictions:team_detail' team_code=player.team.code %}">← {{ player.team.name }}</a>
+  </p>
+  <h1>{{ player.name }}</h1>
+  <p class="lede">
+    <a href="{% url 'predictions:team_detail' team_code=player.team.code %}">{{ player.team.name }}</a>
+    · {{ player.get_position_display }}
+    {% if player.shirt_number %}· #{{ player.shirt_number }}{% endif %}
+    {% if player.club %}· {{ player.club }}{% endif %}
+  </p>
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>Status</h2>
+    <p>{% if player.is_injured %}<span class="pill pill-warn">Injury flag</span>{% else %}<span class="muted">No injury flag</span>{% endif %}</p>
+    {% if player.injury_notes %}<p class="prose">{{ player.injury_notes }}</p>{% endif %}
+    {% if player.cards_suspension_notes %}<p class="prose"><strong>Cards / suspension:</strong> {{ player.cards_suspension_notes }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <h2>Form &amp; club</h2>
+    {% if player.recent_club_scores %}<p><strong>Recent (curated):</strong> {{ player.recent_club_scores }}</p>{% endif %}
+    {% if player.form_notes %}<p class="prose">{{ player.form_notes }}</p>{% else %}<p class="muted">No form notes.</p>{% endif %}
+  </div>
+</section>
+
+{% if player.performance_summary %}
+<section class="card">
+  <h2>Performance summary</h2>
+  <p class="prose">{{ player.performance_summary }}</p>
+</section>
+{% endif %}
+
+{% if player.stats_snapshot %}
+<section class="card">
+  <h2>Stats snapshot</h2>
+  <ul class="kv-list">
+    {% for k, v in player.stats_snapshot.items %}
+      <li><strong>{{ k }}:</strong> {{ v }}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

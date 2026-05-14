@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}World Cup groups · WC Predict{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>World Cup groups</h1>
+  <p class="lede">Standings are computed from <strong>finished</strong> group-stage matches in your database (scores required).</p>
+</section>
+
+<section class="card">
+  <h2>Pick a group</h2>
+  <div class="group-pills">
+    {% for L in letters %}
+      <a class="btn btn-ghost btn-compact" href="{% url 'predictions:wc_group' letter=L %}">Group {{ L }}</a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
