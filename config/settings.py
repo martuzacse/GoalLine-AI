@@ -34,7 +34,8 @@ SECRET_KEY = os.environ.get(
 _default_debug = "False" if os.environ.get("RENDER") else "True"
 DEBUG = os.environ.get("DEBUG", _default_debug).lower() in ("1", "true", "yes")
 
-# Comma-separated hostnames; on Render set e.g. your-app.onrender.com or use RENDER_EXTERNAL_HOSTNAME
+# Serve collected static in production. Do not rely only on RENDER (some stacks omit it).
+USE_WHITENOISE = (not DEBUG) or bool(os.environ.get("RENDER"))
 _default_hosts = "localhost,127.0.0.1"
 if os.environ.get("RENDER"):
     _default_hosts = f"localhost,127.0.0.1,{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}"
@@ -61,7 +62,7 @@ MIDDLEWARE = [
     "config.middleware.DatabaseErrorResponseMiddleware",
     "django.middleware.security.SecurityMiddleware",
 ]
-if os.environ.get("RENDER"):
+if USE_WHITENOISE:
     MIDDLEWARE.append("whitenoise.middleware.WhiteNoiseMiddleware")
 MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -153,7 +154,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-if os.environ.get("RENDER"):
+if USE_WHITENOISE:
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
