@@ -48,6 +48,22 @@ ALLOWED_HOSTS = [
     h.strip() for h in os.environ.get("ALLOWED_HOSTS", _default_hosts).split(",") if h.strip()
 ]
 
+# Render terminates TLS at the edge; Django must trust X-Forwarded-Proto for is_secure(), cookies, CSRF.
+if os.environ.get("RENDER"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+_csrf = [x.strip() for x in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if x.strip()]
+if not _csrf and os.environ.get("RENDER"):
+    _ext = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+    if _ext:
+        _csrf = [f"https://{_ext}"]
+    else:
+        for _h in ALLOWED_HOSTS:
+            if _h not in ("localhost", "127.0.0.1", "0.0.0.0") and "." in _h:
+                _csrf.append(f"https://{_h}")
+                break
+CSRF_TRUSTED_ORIGINS = _csrf
+
 
 # Application definition
 
@@ -168,6 +184,14 @@ if USE_WHITENOISE:
             "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
         },
     }
+    # Render builds often skip collectstatic; finders serve from STATICFILES_DIRS so /static/ works.
+    # Opt out: WHITENOISE_STRICT_STATIC_ROOT=1 (then rely on collectstatic + STATIC_ROOT only).
+    if os.environ.get("DATABASE_URL") and os.environ.get("WHITENOISE_STRICT_STATIC_ROOT", "").lower() not in (
+        "1",
+        "true",
+        "yes",
+    ):
+        WHITENOISE_USE_FINDERS = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
