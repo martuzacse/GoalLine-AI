@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from django.db import DatabaseError
+from django.db.utils import DatabaseError
 from django.http import HttpResponse
 
 
