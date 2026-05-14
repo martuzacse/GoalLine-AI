@@ -47,11 +47,28 @@ class PredictionSnapshot(models.Model):
 
     @classmethod
     def latest_by_match_id(cls, match_ids: list[int]) -> dict[int, "PredictionSnapshot"]:
-        """Most recent snapshot per match id (one query)."""
+        """
+        Most recent snapshot per match id (one query).
+
+        List views only need scoreline + confidence; large JSON columns are deferred so a
+        single bad ``predicted_scorers`` / ``factors`` value cannot break the whole queryset.
+        """
         if not match_ids:
             return {}
         out: dict[int, PredictionSnapshot] = {}
-        for snap in cls.objects.filter(match_id__in=match_ids).order_by("match_id", "-created_at"):
+        qs = (
+            cls.objects.filter(match_id__in=match_ids)
+            .only(
+                "id",
+                "match_id",
+                "created_at",
+                "pred_home_goals",
+                "pred_away_goals",
+                "confidence",
+            )
+            .order_by("match_id", "-created_at")
+        )
+        for snap in qs:
             if snap.match_id not in out:
                 out[snap.match_id] = snap
         return out

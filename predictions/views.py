@@ -28,7 +28,10 @@ from predictions.source_catalog import SOURCE_CATEGORIES
 def _scorer_one_line(prediction: PredictionSnapshot | None, max_names: int = 5) -> str:
     if not prediction:
         return ""
-    ps = prediction.predicted_scorers
+    try:
+        ps = prediction.predicted_scorers
+    except Exception:
+        return ""
     if not ps or not isinstance(ps, dict):
         return ""
     names: list[str] = []
