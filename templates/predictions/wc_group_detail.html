@@ -65,7 +65,7 @@
             <div class="muted small">{{ m.round_name }} · {{ m.get_status_display }}</div>
           </div>
           <div class="fixture-meta">
-            <span class="muted small">{{ m.kickoff|default:"TBC" }}</span>
+            <span class="muted small">{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %}</span>
             {% if m.latest_prediction %}
               <div class="pred-cell">
                 <span class="scoreline sm">{{ m.latest_prediction.pred_home_goals }}–{{ m.latest_prediction.pred_away_goals }}</span>

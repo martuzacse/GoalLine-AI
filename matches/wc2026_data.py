@@ -7,8 +7,8 @@ official kickoffs from FIFA’s published schedule
 (https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/articles/match-schedule-fixtures-results-teams-stadiums).
 
 This module expands the full *group stage* (72 matches: 12 groups × 3 matchdays × 2 games).
-Knock-out bracket slots depend on which third-placed sides advance; add those fixtures
-separately once FIFA’s bracket positions are wired into your workflow.
+Knock-out phases (Round of 32 … Final) are loaded separately via
+``python manage.py load_wc2026_knockout`` — see ``matches/wc2026_knockout.py`` and ``KnockoutFeed`` in admin.
 """
 
 from __future__ import annotations

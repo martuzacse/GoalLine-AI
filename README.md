@@ -13,6 +13,9 @@ Predictions are **experimental** and not betting advice.
 - **Team & player** pages: squad lists, fixtures, and player narrative fields used by the agent.
 - **World Cup groups** (`/wc/groups/`): **standings** derived from finished group matches in the DB plus a fixture list for that group letter.
 - **Insights** (`/insights/`): coverage counts and a **calibration** table (goal error on latest snapshot vs final score).
+- **Kickoff times**: stored in **UTC** in the database; the UI formats them in **each visitor’s browser time zone** (`static/js/local-time.js`).
+- **World Cup knockout rounds**: optional placeholder fixtures for **Round of 32** through **Final** (plus **Third-place play-off**), loaded separately; **KnockoutFeed** in admin wires “winner of match X” into a later slot. `resolve_knockout_bracket` uses **final scores** when available, otherwise the **latest predicted scoreline** if decisive.
+- **Home page**: **Today’s matches** (from your DB, local calendar day via `GET /api/today-matches/?tz=…`) and **Goal.com US** headline cache (`refresh_goal_feed`). **Official scores** should still be curated in admin (or a licensed API); automated HTML parsing of live scores is fragile and not implemented here.
 
 ## Requirements
 
@@ -68,6 +71,9 @@ Documented in **`env.example`**. Important entries:
 | `python manage.py migrate` | Apply schema |
 | `python manage.py ensure_initial_data` | Idempotent demo / bootstrap (also referenced from `build.sh` / `start.sh`) |
 | `python manage.py load_wc2026_fixtures --replace-wc` | Load 72 group-stage WC rows from `matches/wc2026_data.py` |
+| `python manage.py load_wc2026_knockout` | Append 32 knockout placeholder matches (use `--force` to replace only those rounds) |
+| `python manage.py resolve_knockout_bracket` | Apply `KnockoutFeed` rules (results or predictions) |
+| `python manage.py refresh_goal_feed` | Fetch [Goal.com US](https://www.goal.com/en-us) and cache headline links (best-effort; respect ToS/robots) |
 | `python manage.py import_squad_json --file matches/data/....json` | Import squads after editing JSON |
 | `python manage.py seed_demo` | Demo data (see command help) |
 
@@ -93,6 +99,7 @@ Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.e
 | Path | Description |
 |------|-------------|
 | `/` | Home / rounds |
+| `/api/today-matches/` | JSON: today’s matches for an IANA zone (`?tz=America/New_York`) |
 | `/fixtures/` | Fixtures hub |
 | `/search/` | Global search |
 | `/wc/groups/` | Group index |
@@ -114,3 +121,13 @@ In **admin → Matches**, you can set:
 - **Match events** (inline): minute, type, side, headline, detail.
 
 Re-run the agent after substantive edits so new **prediction snapshots** and **diffs** reflect your updates.
+
+### Knockout bracket (optional)
+
+1. Load placeholders: `python manage.py load_wc2026_knockout` (add `--force` to replace knockout-phase rows only).
+2. In **admin → Matches**, open each advancing tie and add **Knockout bracket feeds** so a later match’s home or away side should receive the **winner** of an earlier match.
+3. Run `python manage.py resolve_knockout_bracket` after results or predictions change (e.g. on a cron every 15 minutes during the tournament).
+
+### Goal.com US headlines (optional)
+
+Run `python manage.py refresh_goal_feed` on a schedule so the home page “Match updates” list stays fresh. Parsing is heuristic; review [Goal.com](https://www.goal.com/en-us) terms and robots.txt for your deployment. **Scores** in this app are driven by your database (admin or your own data pipeline), not by live scraping of Goal scoreboards.

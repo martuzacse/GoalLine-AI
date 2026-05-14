@@ -7,9 +7,44 @@
     Each match keeps a <strong>timeline of prediction snapshots</strong>. When the tournament is live,
     update scores, injuries, and news in admin — then re-run the DeepSeek agent to refresh the forecast,
     confidence, and an explicit <em>why it moved</em> note.
+    Kickoffs display in <strong>your local time zone</strong>. Curated headlines can be synced from
+    <a href="https://www.goal.com/en-us" rel="noopener noreferrer">Goal.com US</a> for this page (see README).
     See the <a href="{% url 'predictions:sources' %}">reference source list</a> we align digests with,
     or open the <a href="{% url 'predictions:fixtures_hub' %}">fixtures hub</a> to search by country, FIFA code, group (A–L), or keyword.
   </p>
+</section>
+
+<section class="grid two">
+  <div class="card interactive-panel">
+    <h2>Today’s matches</h2>
+    <p class="muted small">Pulled from your database for the calendar day in your browser (IANA zone sent to the server).</p>
+    <div id="home-today-matches">
+      <p class="muted small">Loading…</p>
+    </div>
+  </div>
+  <div class="card interactive-panel">
+    <h2>Match updates (Goal.com US)</h2>
+    <p class="muted small">
+      Run <code>python manage.py refresh_goal_feed</code> on a schedule (or after deploy) to populate this list.
+      Parsing is best-effort; respect Goal’s terms and robots rules in production.
+    </p>
+    {% if news_feed %}
+      <ul class="list home-news-list">
+        {% for item in news_feed %}
+          <li>
+            {% if item.url %}
+              <a href="{{ item.url }}" rel="noopener noreferrer">{{ item.title }}</a>
+            {% else %}
+              {{ item.title }}
+            {% endif %}
+            <span class="muted small"> · {{ item.fetched_at }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No cached headlines yet — run the refresh command once the server can reach goal.com.</p>
+    {% endif %}
+  </div>
 </section>
 
 <section class="stats-strip card card-tight">
@@ -86,7 +121,7 @@
               <span class="pred-inline">{{ m.latest_prediction.scoreline_label }}</span>
               <span class="muted small">{{ m.latest_prediction.confidence }}%</span>
             {% endif %}
-            <span class="muted">{{ m.round_name }}</span>
+            <span class="muted">{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %} · {{ m.round_name }}</span>
             {% if m.pred_scorers_one_line %}
               <div class="scorer-blurb muted small">{{ m.pred_scorers_one_line }}</div>
             {% endif %}

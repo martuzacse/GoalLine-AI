@@ -138,3 +138,41 @@ class MatchEvent(models.Model):
     def __str__(self) -> str:
         mm = f"{self.minute}' " if self.minute is not None else ""
         return f"{mm}{self.get_event_type_display()}: {self.headline}"
+
+
+class KnockoutFeed(models.Model):
+    """Links a knockout match side to a source match whose winner (or predicted winner) fills the slot."""
+
+    class Side(models.TextChoices):
+        HOME = "home", "Home"
+        AWAY = "away", "Away"
+
+    target_match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="knockout_feeds_in")
+    target_side = models.CharField(max_length=4, choices=Side.choices)
+    source_match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="knockout_feeds_out")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["target_match", "target_side"],
+                name="uniq_knockout_feed_target_side",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.target_match_id} {self.target_side} ← winner of {self.source_match_id}"
+
+
+class NewsFeedItem(models.Model):
+    """Cached headlines (e.g. from Goal.com US) for the home page."""
+
+    title = models.CharField(max_length=400)
+    url = models.URLField(max_length=600, blank=True)
+    source = models.CharField(max_length=40, default="goal.com")
+    fetched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-fetched_at"]
+
+    def __str__(self) -> str:
+        return self.title[:80]

@@ -13,11 +13,14 @@ def nav_explore(request):
     try:
         from matches.models import Match
 
+        from matches.wc_round_order import wc_round_sort_key
+
         nav_rounds = list(
             Match.objects.values("round_name")
             .annotate(match_count=Count("id"))
-            .order_by("round_name")[:80]
         )
+        nav_rounds.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
+        nav_rounds = nav_rounds[:80]
     except Exception:
         nav_rounds = []
 

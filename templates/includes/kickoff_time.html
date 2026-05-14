@@ -1,0 +1,5 @@
+{% if kickoff %}
+<time class="kickoff-local muted small" datetime="{{ kickoff|date:'c' }}" title="{{ kickoff|date:'Y-m-d H:i' }} UTC">{{ kickoff|date:"M j, Y H:i" }} UTC</time>
+{% else %}
+<span class="muted small">TBC</span>
+{% endif %}

@@ -8,6 +8,9 @@
   <h1>{{ match.home_team.name }} vs {{ match.away_team.name }}</h1>
   <p class="lede">
     Status: <strong>{{ match.get_status_display }}</strong>
+    {% if match.kickoff %}
+      · Kickoff: {% include "includes/kickoff_time.html" with kickoff=match.kickoff only %}
+    {% endif %}
     {% if match.home_score is not None %}
       · Live / final score in DB: <strong>{{ match.home_score }}–{{ match.away_score }}</strong>
     {% endif %}

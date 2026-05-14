@@ -65,7 +65,7 @@
             <a href="{% url 'predictions:match_detail' match_id=m.id %}">{{ m.home_team.code }} vs {{ m.away_team.code }}</a>
             <span class="muted small"> · {{ m.round_name }}</span>
           </span>
-          <span class="muted small">{{ m.kickoff|default:"—" }}</span>
+          <span class="muted small">{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %}</span>
         </li>
       {% endfor %}
     </ul>

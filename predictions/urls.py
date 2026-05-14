@@ -6,6 +6,7 @@ app_name = "predictions"
 
 urlpatterns = [
     path("", views.home, name="home"),
+    path("api/today-matches/", views.matches_today_json, name="matches_today_json"),
     path("search/", views.global_search, name="search"),
     path("player/<int:player_id>/", views.player_detail, name="player_detail"),
     path("team/<str:team_code>/", views.team_detail, name="team_detail"),

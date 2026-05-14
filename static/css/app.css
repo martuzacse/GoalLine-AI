@@ -928,6 +928,23 @@ details summary {
   color: var(--danger);
 }
 
+.tile-kick,
+.wc-kick {
+  margin: 4px 0 6px;
+}
+.home-today-list li,
+.home-news-list li {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.home-today-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
 @media (max-width: 720px) {
   .header-toolbar {
     flex-direction: column;

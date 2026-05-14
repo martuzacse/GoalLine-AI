@@ -33,6 +33,7 @@
       <table class="table table-interactive">
         <thead>
           <tr>
+            <th>Kickoff</th>
             <th>Fixture</th>
             <th>Status</th>
             <th>Actual</th>
@@ -43,6 +44,7 @@
         <tbody>
           {% for m in matches %}
             <tr class="table-row-click" data-href="{% url 'predictions:match_detail' match_id=m.id %}">
+              <td>{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %}</td>
               <td>{{ m.home_team.name }} vs {{ m.away_team.name }}</td>
               <td>{{ m.get_status_display }}</td>
               <td>

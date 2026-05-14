@@ -1,16 +1,22 @@
 from __future__ import annotations
 
+from datetime import datetime, time
+from zoneinfo import ZoneInfo
+
 from django.conf import settings
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.urls import reverse
+from django.utils import timezone as dj_timezone
+from django.views.decorators.http import require_GET, require_POST
 
 from agents.deepseek import DeepSeekError
-from matches.models import Match, MatchEvent, Player, Team
+from matches.models import Match, MatchEvent, NewsFeedItem, Player, Team
 from matches.search import filter_matches_by_search
 from matches.standings import standings_for_group, upcoming_group_matches
+from matches.wc_round_order import wc_round_sort_key
 from matches.wc2026_data import GROUPS
 from predictions.analysis import calibration_rows, snapshot_diff
 from predictions.models import PredictionSnapshot
@@ -47,11 +53,8 @@ def _attach_latest_predictions(matches: list[Match]) -> None:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    rounds = (
-        Match.objects.values("round_name")
-        .annotate(match_count=Count("id"))
-        .order_by("round_name")
-    )
+    rounds_raw = list(Match.objects.values("round_name").annotate(match_count=Count("id")))
+    rounds_raw.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
     upcoming = list(
         Match.objects.select_related("home_team", "away_team")
         .order_by("kickoff", "id")[:12]
@@ -60,15 +63,17 @@ def home(request: HttpRequest) -> HttpResponse:
     match_total = Match.objects.count()
     wc_total = Match.objects.filter(is_world_cup=True).count()
     live_total = Match.objects.filter(status=Match.Status.LIVE).count()
+    news_feed = list(NewsFeedItem.objects.all()[:14])
     return render(
         request,
         "predictions/home.html",
         {
-            "rounds": rounds,
+            "rounds": rounds_raw,
             "upcoming": upcoming,
             "match_total": match_total,
             "wc_total": wc_total,
             "live_total": live_total,
+            "news_feed": news_feed,
         },
     )
 
@@ -110,7 +115,7 @@ def fixtures_hub(request: HttpRequest) -> HttpResponse:
     wc_by_round: dict[str, list[Match]] = {}
     for m in wc_matches:
         wc_by_round.setdefault(m.round_name, []).append(m)
-    wc_rounds = sorted(wc_by_round.items(), key=lambda x: x[0])
+    wc_rounds = sorted(wc_by_round.items(), key=lambda x: wc_round_sort_key(x[0]))
 
     return render(
         request,
@@ -125,6 +130,56 @@ def fixtures_hub(request: HttpRequest) -> HttpResponse:
             "current_matches": current_matches,
             "wc_rounds": wc_rounds,
         },
+    )
+
+
+@require_GET
+def matches_today_json(request: HttpRequest) -> JsonResponse:
+    """Matches whose kickoff falls on the viewer's local calendar day (tz from IANA name)."""
+    raw_tz = (request.GET.get("tz") or "UTC").strip()[:80]
+    try:
+        tz = ZoneInfo(raw_tz)
+        tzname = raw_tz
+    except Exception:
+        tz = ZoneInfo("UTC")
+        tzname = "UTC"
+    now_local = dj_timezone.now().astimezone(tz)
+    day_start = datetime.combine(now_local.date(), time.min, tzinfo=tz)
+    day_end = datetime.combine(now_local.date(), time.max, tzinfo=tz)
+    start_utc = day_start.astimezone(ZoneInfo("UTC"))
+    end_utc = day_end.astimezone(ZoneInfo("UTC"))
+    qs = Match.objects.select_related("home_team", "away_team").filter(
+        kickoff__isnull=False,
+        kickoff__gte=start_utc,
+        kickoff__lte=end_utc,
+    )
+    matches = list(qs.order_by("kickoff", "id"))
+    _attach_latest_predictions(matches)
+    rows: list[dict] = []
+    for m in matches:
+        lp = getattr(m, "latest_prediction", None)
+        rows.append(
+            {
+                "id": m.id,
+                "home_code": m.home_team.code,
+                "away_code": m.away_team.code,
+                "round_name": m.round_name,
+                "kickoff": m.kickoff.isoformat() if m.kickoff else None,
+                "status": m.status,
+                "home_score": m.home_score,
+                "away_score": m.away_score,
+                "pred_scoreline": lp.scoreline_label if lp else None,
+                "pred_confidence": lp.confidence if lp else None,
+                "is_world_cup": m.is_world_cup,
+                "detail_url": request.build_absolute_uri(reverse("predictions:match_detail", args=[m.id])),
+            }
+        )
+    return JsonResponse(
+        {
+            "timezone": tzname,
+            "date": str(now_local.date()),
+            "matches": rows,
+        }
     )
 
 

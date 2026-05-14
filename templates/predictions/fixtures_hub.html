@@ -4,9 +4,10 @@
 <section class="fixtures-hero">
   <h1>Fixtures & predictions</h1>
   <p class="lede">
-    Pick <strong>Current</strong> for club or international friendlies you store as non–World Cup fixtures, or
-    <strong>World Cup 2026</strong> for every tournament match grouped by round. Open a match to run the DeepSeek agent.
-    This hub only shows <em>your database</em> — it does not scrape external sites.
+    Kickoffs are shown in <strong>your browser’s local time zone</strong> (UTC stored in the database).
+    Load the group stage with <code>load_wc2026_fixtures --replace-wc</code>, then add knockout placeholders with
+    <code>load_wc2026_knockout</code> (see README). Open a match to run the DeepSeek agent.
+    This hub shows <em>your database</em>; headline-style updates can be synced separately (see README).
   </p>
   <p class="fixtures-disclaimer">
     Not affiliated with
@@ -97,6 +98,7 @@
               <span class="muted small">Scheduled</span>
             {% endif %}
           </div>
+          <div class="tile-kick muted small">{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %}</div>
           <div class="tile-teams">
             <span class="crest-line"><span class="code">{{ m.home_team.code }}</span> vs <span class="code">{{ m.away_team.code }}</span></span>
           </div>
@@ -128,9 +130,9 @@
 <section class="card fixtures-panel interactive-panel">
   <h2>2026 FIFA World Cup — all rounds</h2>
   <p class="muted small">
-    Group stage: 72 fixtures can be bulk-loaded with
-    <code>python manage.py load_wc2026_fixtures --replace-wc</code>
-    (see <code>matches/wc2026_data.py</code>). Knock-out slots are bracket-dependent and are not auto-generated yet.
+    Group stage: 72 fixtures from <code>python manage.py load_wc2026_fixtures --replace-wc</code>.
+    Knockout phases (Round of 32 through Final): <code>python manage.py load_wc2026_knockout</code> then wire
+    <code>KnockoutFeed</code> in admin and run <code>resolve_knockout_bracket</code> so slots fill from results or predictions.
   </p>
   {% if wc_rounds %}
     {% for round_name, rmatches in wc_rounds %}
@@ -147,6 +149,7 @@
                   <span class="pill pill-ft">FT</span>
                 {% endif %}
               </div>
+              <div class="wc-kick muted small">{% include "includes/kickoff_time.html" with kickoff=m.kickoff only %}</div>
               <div class="wc-teams">{{ m.home_team.name }} <span class="vs">v</span> {{ m.away_team.name }}</div>
               <div class="wc-scoreline">
                 {% if m.home_score is not None %}

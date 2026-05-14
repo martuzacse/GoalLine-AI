@@ -2,7 +2,15 @@ from django.contrib import admin
 
 from predictions.models import PredictionSnapshot
 
-from .models import Match, MatchEvent, Player, Team
+from .models import KnockoutFeed, Match, MatchEvent, NewsFeedItem, Player, Team
+
+
+class KnockoutFeedInline(admin.TabularInline):
+    model = KnockoutFeed
+    fk_name = "target_match"
+    extra = 0
+    fields = ("target_side", "source_match")
+    verbose_name_plural = "Knockout bracket feeds (fill a side from winner of source match)"
 
 
 class PredictionSnapshotInline(admin.TabularInline):
@@ -48,9 +56,22 @@ class PlayerAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(KnockoutFeed)
+class KnockoutFeedAdmin(admin.ModelAdmin):
+    list_display = ("target_match", "target_side", "source_match")
+    list_filter = ("target_side",)
+    search_fields = ("target_match__round_name", "source_match__round_name")
+
+
+@admin.register(NewsFeedItem)
+class NewsFeedItemAdmin(admin.ModelAdmin):
+    list_display = ("title", "source", "fetched_at", "url")
+    readonly_fields = ("fetched_at",)
+
+
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
-    inlines = [MatchEventInline, PredictionSnapshotInline]
+    inlines = [KnockoutFeedInline, MatchEventInline, PredictionSnapshotInline]
     list_display = (
         "round_name",
         "home_team",

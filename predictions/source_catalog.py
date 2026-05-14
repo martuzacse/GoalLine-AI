@@ -77,9 +77,9 @@ SOURCE_CATEGORIES: tuple[SourceCategory, ...] = (
                 "Long-form reporting and analysis.",
             ),
             SourceEntry(
-                "Goal.com",
-                "https://www.goal.com",
-                "Global football news (multiple regional editions).",
+                "Goal.com (US edition)",
+                "https://www.goal.com/en-us",
+                "News and features; optional `refresh_goal_feed` command caches headline links for the home page (best-effort HTML parsing).",
             ),
             SourceEntry(
                 "The Athletic (football)",

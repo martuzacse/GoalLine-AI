@@ -73,9 +73,9 @@ class Command(BaseCommand):
             )
         )
         self.stdout.write(
-            "Verify groups and playoff winners against FIFA: "
-            "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/"
-            "articles/match-schedule-fixtures-results-teams-stadiums"
+            self.style.NOTICE(
+                "If you had knockout placeholders, re-run: python manage.py load_wc2026_knockout --force"
+            )
         )
         self.stdout.write(
             "Next: curate squads (names, positions, recent form) with "

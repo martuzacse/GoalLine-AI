@@ -7,7 +7,7 @@
   <title>{% block title %}World Cup Predictions{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body>
+<body data-today-matches-api="{% url 'predictions:matches_today_json' %}">
   <header class="site-header">
     <div class="wrap header-toolbar">
       <div class="header-brand-row">
@@ -89,6 +89,6 @@
         }
       });
     })();
-  </script>
+  <script src="{% static 'js/local-time.js' %}"></script>
 </body>
 </html>
