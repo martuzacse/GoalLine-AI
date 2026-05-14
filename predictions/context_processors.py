@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django.db.models import Count
+from django.db.utils import OperationalError, ProgrammingError
 
 
 def nav_explore(request):
@@ -21,6 +22,8 @@ def nav_explore(request):
         )
         nav_rounds.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
         nav_rounds = nav_rounds[:80]
+    except (ProgrammingError, OperationalError):
+        nav_rounds = []
     except Exception:
         nav_rounds = []
 

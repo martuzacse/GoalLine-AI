@@ -84,6 +84,12 @@ Documented in **`env.example`**. Important entries:
 
 Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.example`**.
 
+### If the site returns 500 after deploy
+
+1. **Run migrations** (includes `matches_newsfeeditem` / `knockoutfeed`): `python manage.py migrate --noinput`
+2. **Reinstall deps** so `beautifulsoup4` is present (used only by `refresh_goal_feed`, not normal page loads).
+3. Check **Render / host logs** for the traceback; the app now tolerates a missing `NewsFeedItem` table and a missing `matches_today_json` route when resolving the base layout URL.
+
 ## Project layout (high level)
 
 | Path | Role |

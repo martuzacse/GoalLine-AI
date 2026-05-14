@@ -1,4 +1,5 @@
 {% load static %}
+{% url "predictions:matches_today_json" as today_matches_api_url %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <title>{% block title %}World Cup Predictions{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
-<body data-today-matches-api="{% url 'predictions:matches_today_json' %}">
+<body{% if today_matches_api_url %} data-today-matches-api="{{ today_matches_api_url }}"{% endif %}>
   <header class="site-header">
     <div class="wrap header-toolbar">
       <div class="header-brand-row">

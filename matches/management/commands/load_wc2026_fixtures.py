@@ -73,7 +73,7 @@ class Command(BaseCommand):
             )
         )
         self.stdout.write(
-            self.style.NOTICE(
+            self.style.WARNING(
                 "If you had knockout placeholders, re-run: python manage.py load_wc2026_knockout --force"
             )
         )

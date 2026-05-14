@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.db.utils import OperationalError, ProgrammingError
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -52,6 +53,13 @@ def _attach_latest_predictions(matches: list[Match]) -> None:
         m.pred_scorers_one_line = _scorer_one_line(lp)  # type: ignore[attr-defined]
 
 
+def _absolute_match_url(request: HttpRequest, match_id: int) -> str:
+    try:
+        return request.build_absolute_uri(reverse("predictions:match_detail", args=[match_id]))
+    except Exception:
+        return reverse("predictions:match_detail", args=[match_id])
+
+
 def home(request: HttpRequest) -> HttpResponse:
     rounds_raw = list(Match.objects.values("round_name").annotate(match_count=Count("id")))
     rounds_raw.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
@@ -63,7 +71,10 @@ def home(request: HttpRequest) -> HttpResponse:
     match_total = Match.objects.count()
     wc_total = Match.objects.filter(is_world_cup=True).count()
     live_total = Match.objects.filter(status=Match.Status.LIVE).count()
-    news_feed = list(NewsFeedItem.objects.all()[:14])
+    try:
+        news_feed = list(NewsFeedItem.objects.all()[:14])
+    except (ProgrammingError, OperationalError):
+        news_feed = []
     return render(
         request,
         "predictions/home.html",
@@ -171,7 +182,7 @@ def matches_today_json(request: HttpRequest) -> JsonResponse:
                 "pred_scoreline": lp.scoreline_label if lp else None,
                 "pred_confidence": lp.confidence if lp else None,
                 "is_world_cup": m.is_world_cup,
-                "detail_url": request.build_absolute_uri(reverse("predictions:match_detail", args=[m.id])),
+                "detail_url": _absolute_match_url(request, m.id),
             }
         )
     return JsonResponse(
