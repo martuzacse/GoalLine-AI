@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, time
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.contrib import messages
 from django.db.models import Count, Q
-from django.db.utils import OperationalError, ProgrammingError
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -23,6 +23,8 @@ from predictions.analysis import calibration_rows, snapshot_diff
 from predictions.models import PredictionSnapshot
 from predictions.services import dry_run_stub_prediction, run_match_prediction
 from predictions.source_catalog import SOURCE_CATEGORIES
+
+logger = logging.getLogger(__name__)
 
 
 def _scorer_one_line(prediction: PredictionSnapshot | None, max_names: int = 5) -> str:
@@ -51,11 +53,20 @@ def _scorer_one_line(prediction: PredictionSnapshot | None, max_names: int = 5) 
 
 
 def _attach_latest_predictions(matches: list[Match]) -> None:
-    latest_map = PredictionSnapshot.latest_by_match_id([m.id for m in matches])
+    if not matches:
+        return
+    try:
+        latest_map = PredictionSnapshot.latest_by_match_id([m.id for m in matches])
+    except Exception:
+        logger.exception("latest_by_match_id failed (match count=%s)", len(matches))
+        latest_map = {}
     for m in matches:
         lp = latest_map.get(m.id)
         m.latest_prediction = lp  # type: ignore[attr-defined]
-        m.pred_scorers_one_line = _scorer_one_line(lp)  # type: ignore[attr-defined]
+        try:
+            m.pred_scorers_one_line = _scorer_one_line(lp)  # type: ignore[attr-defined]
+        except Exception:
+            m.pred_scorers_one_line = ""  # type: ignore[attr-defined]
 
 
 def _absolute_match_url(request: HttpRequest, match_id: int) -> str:
@@ -65,7 +76,8 @@ def _absolute_match_url(request: HttpRequest, match_id: int) -> str:
         return reverse("predictions:match_detail", args=[match_id])
 
 
-def home(request: HttpRequest) -> HttpResponse:
+def home_context(request: HttpRequest) -> dict:
+    """Template context for ``predictions/home.html`` (also used by ``/healthz/probe/``)."""
     rounds_raw = list(Match.objects.values("round_name").annotate(match_count=Count("id")))
     rounds_raw = [r for r in rounds_raw if round_name_url_safe(r.get("round_name"))]
     rounds_raw.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
@@ -79,24 +91,25 @@ def home(request: HttpRequest) -> HttpResponse:
     live_total = Match.objects.filter(status=Match.Status.LIVE).count()
     try:
         news_feed = list(NewsFeedItem.objects.all()[:14])
-    except (ProgrammingError, OperationalError):
+    except Exception:
+        logger.exception("NewsFeedItem query failed; continuing without headlines")
         news_feed = []
-    return render(
-        request,
-        "predictions/home.html",
-        {
-            "rounds": rounds_raw,
-            "upcoming": upcoming,
-            "match_total": match_total,
-            "wc_total": wc_total,
-            "live_total": live_total,
-            "news_feed": news_feed,
-        },
-    )
+    return {
+        "rounds": rounds_raw,
+        "upcoming": upcoming,
+        "match_total": match_total,
+        "wc_total": wc_total,
+        "live_total": live_total,
+        "news_feed": news_feed,
+    }
 
 
-def fixtures_hub(request: HttpRequest) -> HttpResponse:
-    """Goal-style strip for current comps + World Cup rounds (data from your DB, not scraped)."""
+def home(request: HttpRequest) -> HttpResponse:
+    return render(request, "predictions/home.html", home_context(request))
+
+
+def fixtures_hub_context(request: HttpRequest) -> dict:
+    """Template context for ``predictions/fixtures_hub.html``."""
     tab = request.GET.get("tab", "current")
     if tab not in ("current", "worldcup"):
         tab = "current"
@@ -134,20 +147,21 @@ def fixtures_hub(request: HttpRequest) -> HttpResponse:
         wc_by_round.setdefault(m.round_name, []).append(m)
     wc_rounds = sorted(wc_by_round.items(), key=lambda x: wc_round_sort_key(x[0]))
 
-    return render(
-        request,
-        "predictions/fixtures_hub.html",
-        {
-            "tab": tab,
-            "search_query": search_q,
-            "status_filter": status,
-            "sort": sort,
-            "current_total": len(current_matches),
-            "wc_match_total": len(wc_matches),
-            "current_matches": current_matches,
-            "wc_rounds": wc_rounds,
-        },
-    )
+    return {
+        "tab": tab,
+        "search_query": search_q,
+        "status_filter": status,
+        "sort": sort,
+        "current_total": len(current_matches),
+        "wc_match_total": len(wc_matches),
+        "current_matches": current_matches,
+        "wc_rounds": wc_rounds,
+    }
+
+
+def fixtures_hub(request: HttpRequest) -> HttpResponse:
+    """Goal-style strip for current comps + World Cup rounds (data from your DB, not scraped)."""
+    return render(request, "predictions/fixtures_hub.html", fixtures_hub_context(request))
 
 
 @require_GET
