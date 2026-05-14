@@ -89,6 +89,7 @@ Neon / empty-schema notes, WhiteNoise, and CSRF hints are summarized in **`env.e
 1. **Run migrations** (includes `matches_newsfeeditem` / `knockoutfeed`): `python manage.py migrate --noinput`
 2. **Reinstall deps** so `beautifulsoup4` is present (used only by `refresh_goal_feed`, not normal page loads).
 3. Check **Render / host logs** for the traceback; the app now tolerates a missing `NewsFeedItem` table and a missing `matches_today_json` route when resolving the base layout URL.
+4. If any **`round_name` in the database contains `/`**, older URL patterns broke every page’s header; the route now uses `<path:round_name>` so those names resolve. Redeploy after pulling the fix.
 
 ## Project layout (high level)
 
