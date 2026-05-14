@@ -29,8 +29,13 @@
       <ul class="list">
         {% for t in teams %}
           <li>
-            <a href="{% url 'predictions:team_detail' team_code=t.code %}">{{ t.name }}</a>
-            <span class="muted">{{ t.code }}</span>
+            {% if t.code %}
+              <a href="{% url 'predictions:team_detail' team_code=t.code %}">{{ t.name }}</a>
+              <span class="muted">{{ t.code }}</span>
+            {% else %}
+              <span>{{ t.name }}</span>
+              <span class="muted small">(no code)</span>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>

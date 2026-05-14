@@ -277,7 +277,11 @@ def global_search(request: HttpRequest) -> HttpResponse:
     players: list[Player] = []
     matches: list[Match] = []
     if q:
-        teams = list(Team.objects.filter(Q(name__icontains=q) | Q(code__icontains=q)).order_by("name")[:24])
+        teams = list(
+            Team.objects.filter(Q(name__icontains=q) | Q(code__icontains=q))
+            .exclude(code="")
+            .order_by("name")[:24]
+        )
         players = list(
             Player.objects.select_related("team")
             .filter(

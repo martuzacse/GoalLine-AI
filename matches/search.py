@@ -37,4 +37,7 @@ def filter_matches_by_search(qs: QuerySet[Match], q: str) -> QuerySet[Match]:
         fl |= Q(external_news_digest__icontains=raw)
         fl |= Q(status__icontains=raw)
 
-    return qs.filter(fl).distinct()
+    # Do not chain .distinct() here: on PostgreSQL, later .order_by("-kickoff", …) on the same
+    # queryset can raise ProgrammingError ("SELECT DISTINCT ON expressions must match…").
+    # OR filters on this model do not duplicate Match rows, so distinct() is unnecessary.
+    return qs.filter(fl)
