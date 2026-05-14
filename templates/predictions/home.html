@@ -74,7 +74,9 @@
           <select class="select-input select-wide" id="home-round-jump" aria-label="Open round">
             <option value="">Choose a round…</option>
             {% for r in nav_rounds %}
+              {% if r.round_name %}
               <option value="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }} ({{ r.match_count }} matches)</option>
+              {% endif %}
             {% endfor %}
           </select>
         </label>

@@ -4,6 +4,16 @@ from __future__ import annotations
 
 import re
 
+
+def round_name_url_safe(round_name: object) -> bool:
+    """
+    True if we can build predictions:round URLs for this name.
+
+    The route uses ``<path:round_name>`` (regex ``.+``), so ``reverse()`` fails
+    for an empty string — which would 500 any page that lists rounds in the nav.
+    """
+    return bool(str(round_name or "").strip())
+
 # Order index for knockout phases (after all group-stage rows).
 _KO_PHASE_ORDER: dict[str, int] = {
     "Round of 32": 100,

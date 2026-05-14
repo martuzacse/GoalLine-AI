@@ -17,7 +17,7 @@ from agents.deepseek import DeepSeekError
 from matches.models import Match, MatchEvent, NewsFeedItem, Player, Team
 from matches.search import filter_matches_by_search
 from matches.standings import standings_for_group, upcoming_group_matches
-from matches.wc_round_order import wc_round_sort_key
+from matches.wc_round_order import round_name_url_safe, wc_round_sort_key
 from matches.wc2026_data import GROUPS
 from predictions.analysis import calibration_rows, snapshot_diff
 from predictions.models import PredictionSnapshot
@@ -64,6 +64,7 @@ def _absolute_match_url(request: HttpRequest, match_id: int) -> str:
 
 def home(request: HttpRequest) -> HttpResponse:
     rounds_raw = list(Match.objects.values("round_name").annotate(match_count=Count("id")))
+    rounds_raw = [r for r in rounds_raw if round_name_url_safe(r.get("round_name"))]
     rounds_raw.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
     upcoming = list(
         Match.objects.select_related("home_team", "away_team")

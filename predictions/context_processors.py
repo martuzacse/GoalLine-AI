@@ -14,12 +14,13 @@ def nav_explore(request):
     try:
         from matches.models import Match
 
-        from matches.wc_round_order import wc_round_sort_key
+        from matches.wc_round_order import round_name_url_safe, wc_round_sort_key
 
         nav_rounds = list(
             Match.objects.values("round_name")
             .annotate(match_count=Count("id"))
         )
+        nav_rounds = [r for r in nav_rounds if round_name_url_safe(r.get("round_name"))]
         nav_rounds.sort(key=lambda r: wc_round_sort_key(r["round_name"]))
         nav_rounds = nav_rounds[:80]
     except (ProgrammingError, OperationalError):

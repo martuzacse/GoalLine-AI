@@ -1,9 +1,14 @@
 {% extends "base.html" %}
+{% load pred_tags %}
 {% block title %}{{ match.home_team.code }} vs {{ match.away_team.code }} · WC Predict{% endblock %}
 {% block content %}
 <section class="hero">
   <p class="crumb">
-    <a href="{% url 'predictions:round' round_name=match.round_name %}">← {{ match.round_name }}</a>
+    {% if match.round_name %}
+      <a href="{% url 'predictions:round' round_name=match.round_name %}">← {{ match.round_name }}</a>
+    {% else %}
+      <a href="{% url 'predictions:fixtures_hub' %}">← Fixtures</a>
+    {% endif %}
   </p>
   <h1>{{ match.home_team.name }} vs {{ match.away_team.name }}</h1>
   <p class="lede">
@@ -168,7 +173,7 @@
   <h2>Full reasoning (latest)</h2>
   {% if latest %}
     <p class="prose">{{ latest.reasoning }}</p>
-    {% if latest.factors %}
+    {% if latest.factors|is_dict %}
       <h3 class="h3">Structured factors</h3>
       <div class="factors">
         {% for key, val in latest.factors.items %}

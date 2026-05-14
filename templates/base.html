@@ -49,7 +49,9 @@
           <select id="nav-round-jump" class="header-select header-select-wide" aria-label="Jump to round">
             <option value="">Round ▾</option>
             {% for r in nav_rounds %}
+              {% if r.round_name %}
               <option value="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }} ({{ r.match_count }})</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
