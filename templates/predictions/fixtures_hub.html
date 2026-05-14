@@ -15,35 +15,62 @@
   </p>
 </section>
 
-<nav class="fixtures-tabs" aria-label="Fixture scope">
-  <a
-    class="fixtures-tab{% if tab == 'current' %} fixtures-tab-active{% endif %}"
-    href="{% url 'predictions:fixtures_hub' %}?tab=current{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-  >Current matches</a>
-  <a
-    class="fixtures-tab{% if tab == 'worldcup' %} fixtures-tab-active{% endif %}"
-    href="{% url 'predictions:fixtures_hub' %}?tab=worldcup{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-  >World Cup only</a>
-</nav>
-
-<form class="fixtures-search" method="get" action="{% url 'predictions:fixtures_hub' %}" role="search">
-  <input type="hidden" name="tab" value="{{ tab }}">
-  <label class="sr-only" for="fixture-q">Search fixtures</label>
-  <input
-    id="fixture-q"
-    class="fixtures-search-input"
-    type="search"
-    name="q"
-    value="{{ search_query }}"
-    placeholder="Country, FIFA code (BRA), group A–L, “Group H”, matchday, league…"
-    autocomplete="off"
-    maxlength="120"
-  >
-  <button class="btn btn-primary fixtures-search-btn" type="submit">Search</button>
-  {% if search_query %}
-    <a class="fixtures-search-clear" href="{% url 'predictions:fixtures_hub' %}?tab={{ tab }}">Clear</a>
+<div class="hub-controls card card-tight">
+  <div class="hub-controls-row">
+    <nav class="fixtures-tabs fixtures-tabs-inline" aria-label="Fixture scope">
+      <a
+        class="fixtures-tab{% if tab == 'current' %} fixtures-tab-active{% endif %}"
+        href="{% url 'predictions:fixtures_hub' %}?tab=current&sort={{ sort }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+      >Current matches</a>
+      <a
+        class="fixtures-tab{% if tab == 'worldcup' %} fixtures-tab-active{% endif %}"
+        href="{% url 'predictions:fixtures_hub' %}?tab=worldcup&sort={{ sort }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}"
+      >World Cup only</a>
+    </nav>
+    <form class="hub-toolbar" method="get" aria-label="Filter fixtures">
+      <input type="hidden" name="tab" value="{{ tab }}">
+      <input type="hidden" name="q" value="{{ search_query }}">
+      <label class="toolbar-label">
+        <span class="toolbar-label-text">Status</span>
+        <select class="select-input" name="status" onchange="this.form.submit()">
+          <option value=""{% if not status_filter %} selected{% endif %}>Any status</option>
+          <option value="scheduled"{% if status_filter == 'scheduled' %} selected{% endif %}>Scheduled</option>
+          <option value="live"{% if status_filter == 'live' %} selected{% endif %}>Live</option>
+          <option value="finished"{% if status_filter == 'finished' %} selected{% endif %}>Finished</option>
+        </select>
+      </label>
+      <label class="toolbar-label">
+        <span class="toolbar-label-text">Sort by kickoff</span>
+        <select class="select-input" name="sort" onchange="this.form.submit()">
+          <option value="kickoff"{% if sort == 'kickoff' %} selected{% endif %}>Earliest first</option>
+          <option value="kickoff_desc"{% if sort == 'kickoff_desc' %} selected{% endif %}>Latest first</option>
+        </select>
+      </label>
+      {% if search_query or status_filter %}
+        <a class="btn btn-ghost btn-compact" href="{% url 'predictions:fixtures_hub' %}?tab={{ tab }}&sort={{ sort }}">Clear filters</a>
+      {% endif %}
+    </form>
+  </div>
+  {% if tab == 'worldcup' and wc_rounds %}
+    <div class="hub-jump-row">
+      <span class="muted small">Jump to round:</span>
+      <select class="select-input select-jump" id="wc-round-jump" aria-label="Jump to World Cup round">
+        <option value="">Select round…</option>
+        {% for round_name, rmatches in wc_rounds %}
+          <option value="#wc-{{ round_name|slugify }}">{{ round_name }} ({{ rmatches|length }})</option>
+        {% endfor %}
+      </select>
+    </div>
   {% endif %}
-</form>
+  {% if tab == 'worldcup' %}
+    <div class="chip-row" aria-label="Quick filter by group">
+      {% for letter in wc_group_letters %}
+        <a class="chip" href="{% url 'predictions:fixtures_hub' %}?tab=worldcup&q=Group+{{ letter }}&sort={{ sort }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Grp {{ letter }}</a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
 {% if search_query %}
   <p class="search-meta muted small">
     Showing <strong>{{ current_total }}</strong> current match{{ current_total|pluralize }} and
@@ -53,13 +80,13 @@
 {% endif %}
 
 {% if tab == 'current' %}
-<section class="card fixtures-panel">
+<section class="card fixtures-panel interactive-panel">
   <h2>Current competitions</h2>
   <p class="muted small">Non–World Cup rows: use for “today’s games” style lists (league label + status + predicted line).</p>
   {% if current_matches %}
     <div class="score-strip" role="list">
       {% for m in current_matches %}
-        <article class="score-tile" role="listitem">
+        <article class="score-tile score-tile-interactive" role="listitem" data-status="{{ m.status }}">
           <div class="tile-league">{{ m.competition_display|default:"Competition" }}</div>
           <div class="tile-statusline">
             {% if m.status == "live" %}
@@ -98,7 +125,7 @@
   {% endif %}
 </section>
 {% else %}
-<section class="card fixtures-panel">
+<section class="card fixtures-panel interactive-panel">
   <h2>2026 FIFA World Cup — all rounds</h2>
   <p class="muted small">
     Group stage: 72 fixtures can be bulk-loaded with
@@ -107,15 +134,17 @@
   </p>
   {% if wc_rounds %}
     {% for round_name, rmatches in wc_rounds %}
-      <div class="wc-round-block">
+      <div class="wc-round-block" id="wc-{{ round_name|slugify }}">
         <h3 class="wc-round-title">{{ round_name }}</h3>
         <div class="wc-grid">
           {% for m in rmatches %}
-            <div class="wc-card">
+            <div class="wc-card wc-card-interactive" data-status="{{ m.status }}">
               <div class="wc-card-head">
                 <span class="muted small">World Cup</span>
                 {% if m.status == "live" %}
                   <span class="live-dot">Live</span>
+                {% elif m.status == "finished" %}
+                  <span class="pill pill-ft">FT</span>
                 {% endif %}
               </div>
               <div class="wc-teams">{{ m.home_team.name }} <span class="vs">v</span> {{ m.away_team.name }}</div>
@@ -150,5 +179,22 @@
     </p>
   {% endif %}
 </section>
+{% endif %}
+
+{% if tab == 'worldcup' and wc_rounds %}
+<script>
+  (function () {
+    var sel = document.getElementById("wc-round-jump");
+    if (!sel) return;
+    sel.addEventListener("change", function () {
+      var h = this.value;
+      if (h) {
+        var el = document.querySelector(h);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      this.selectedIndex = 0;
+    });
+  })();
+</script>
 {% endif %}
 {% endblock %}

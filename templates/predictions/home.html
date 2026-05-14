@@ -12,11 +12,52 @@
   </p>
 </section>
 
+<section class="stats-strip card card-tight">
+  <div class="stat-pill" title="All matches in the database">
+    <span class="stat-value">{{ match_total }}</span>
+    <span class="stat-label">Matches</span>
+  </div>
+  <div class="stat-pill" title="World Cup flagged rows">
+    <span class="stat-value">{{ wc_total }}</span>
+    <span class="stat-label">World Cup</span>
+  </div>
+  <div class="stat-pill" title="Live status in DB">
+    <span class="stat-value">{{ live_total }}</span>
+    <span class="stat-label">Live now</span>
+  </div>
+  <a class="btn btn-primary btn-compact" href="{% url 'predictions:fixtures_hub' %}?tab=worldcup">Open fixtures hub</a>
+</section>
+
+<section class="card home-explore">
+  <details class="explore-details" open>
+    <summary class="explore-summary">Quick navigation</summary>
+    <div class="explore-body">
+      <p class="muted small">Jump straight to a competition round or filter the World Cup hub by group letter.</p>
+      <div class="explore-row">
+        <label class="toolbar-label">
+          <span class="toolbar-label-text">Go to round</span>
+          <select class="select-input select-wide" id="home-round-jump" aria-label="Open round">
+            <option value="">Choose a round…</option>
+            {% for r in nav_rounds %}
+              <option value="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }} ({{ r.match_count }} matches)</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="chip-row chip-row-tight">
+        {% for letter in wc_group_letters %}
+          <a class="chip chip-wc" href="{% url 'predictions:fixtures_hub' %}?tab=worldcup&q=Group+{{ letter }}">WC group {{ letter }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </details>
+</section>
+
 <section class="grid two">
-  <div class="card">
+  <div class="card interactive-panel">
     <h2>Rounds</h2>
     {% if rounds %}
-      <ul class="list">
+      <ul class="list list-rounds">
         {% for r in rounds %}
           <li>
             <a href="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }}</a>
@@ -32,7 +73,7 @@
       </p>
     {% endif %}
   </div>
-  <div class="card">
+  <div class="card interactive-panel">
     <h2>Upcoming (sample)</h2>
     {% if upcoming %}
       <ul class="list">
@@ -57,4 +98,15 @@
     {% endif %}
   </div>
 </section>
+<script>
+  (function () {
+    var s = document.getElementById("home-round-jump");
+    if (s) {
+      s.addEventListener("change", function () {
+        if (this.value) window.location.href = this.value;
+        this.selectedIndex = 0;
+      });
+    }
+  })();
+</script>
 {% endblock %}

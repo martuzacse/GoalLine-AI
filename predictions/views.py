@@ -54,10 +54,19 @@ def home(request: HttpRequest) -> HttpResponse:
         .order_by("kickoff", "id")[:12]
     )
     _attach_latest_predictions(upcoming)
+    match_total = Match.objects.count()
+    wc_total = Match.objects.filter(is_world_cup=True).count()
+    live_total = Match.objects.filter(status=Match.Status.LIVE).count()
     return render(
         request,
         "predictions/home.html",
-        {"rounds": rounds, "upcoming": upcoming},
+        {
+            "rounds": rounds,
+            "upcoming": upcoming,
+            "match_total": match_total,
+            "wc_total": wc_total,
+            "live_total": live_total,
+        },
     )
 
 
@@ -69,16 +78,30 @@ def fixtures_hub(request: HttpRequest) -> HttpResponse:
 
     search_q = (request.GET.get("q") or "").strip()
 
+    status = (request.GET.get("status") or "").strip()
+    valid_status = {"", Match.Status.SCHEDULED, Match.Status.LIVE, Match.Status.FINISHED}
+    if status not in valid_status:
+        status = ""
+
+    sort = (request.GET.get("sort") or "kickoff").strip()
+    if sort not in ("kickoff", "kickoff_desc"):
+        sort = "kickoff"
+    order = ("-kickoff", "id") if sort == "kickoff_desc" else ("kickoff", "id")
+
     current_qs = Match.objects.filter(is_world_cup=False).select_related("home_team", "away_team")
     if search_q:
         current_qs = filter_matches_by_search(current_qs, search_q)
-    current_matches = list(current_qs.order_by("kickoff", "id"))
+    if status:
+        current_qs = current_qs.filter(status=status)
+    current_matches = list(current_qs.order_by(*order))
     _attach_latest_predictions(current_matches)
 
     wc_qs = Match.objects.filter(is_world_cup=True).select_related("home_team", "away_team")
     if search_q:
         wc_qs = filter_matches_by_search(wc_qs, search_q)
-    wc_matches = list(wc_qs.order_by("kickoff", "id"))
+    if status:
+        wc_qs = wc_qs.filter(status=status)
+    wc_matches = list(wc_qs.order_by(*order))
     _attach_latest_predictions(wc_matches)
 
     wc_by_round: dict[str, list[Match]] = {}
@@ -92,6 +115,8 @@ def fixtures_hub(request: HttpRequest) -> HttpResponse:
         {
             "tab": tab,
             "search_query": search_q,
+            "status_filter": status,
+            "sort": sort,
             "current_total": len(current_matches),
             "wc_match_total": len(wc_matches),
             "current_matches": current_matches,

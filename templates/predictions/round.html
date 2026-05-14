@@ -4,70 +4,86 @@
 <section class="hero">
   <p class="crumb"><a href="{% url 'predictions:home' %}">← All rounds</a></p>
   <h1>{{ round_name }}</h1>
-  <form class="fixtures-search round-search" method="get" action="{% url 'predictions:round' round_name=round_name %}" role="search">
-    <label class="sr-only" for="round-q">Filter matches in this round</label>
-    <input
-      id="round-q"
-      class="fixtures-search-input"
-      type="search"
-      name="q"
-      value="{{ search_query }}"
-      placeholder="Filter by team, code, keyword…"
-      autocomplete="off"
-      maxlength="120"
-    >
-    <button class="btn btn-primary fixtures-search-btn" type="submit">Filter</button>
-    {% if search_query %}
-      <a class="fixtures-search-clear" href="{% url 'predictions:round' round_name=round_name %}">Clear</a>
-    {% endif %}
-  </form>
+  <details class="round-filter-details"{% if search_query %} open{% endif %}>
+    <summary class="round-filter-summary">Filter matches in this round</summary>
+    <form class="fixtures-search round-search" method="get" action="{% url 'predictions:round' round_name=round_name %}" role="search">
+      <label class="sr-only" for="round-q">Filter matches in this round</label>
+      <input
+        id="round-q"
+        class="fixtures-search-input"
+        type="search"
+        name="q"
+        value="{{ search_query }}"
+        placeholder="Team name, FIFA code, keyword…"
+        autocomplete="off"
+        maxlength="120"
+      >
+      <button class="btn btn-primary fixtures-search-btn" type="submit">Apply</button>
+      {% if search_query %}
+        <a class="fixtures-search-clear" href="{% url 'predictions:round' round_name=round_name %}">Clear</a>
+      {% endif %}
+    </form>
+  </details>
 </section>
 
-<section class="card">
+<section class="card interactive-panel">
   <h2>Matches</h2>
   {% if matches %}
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Fixture</th>
-          <th>Status</th>
-          <th>Actual</th>
-          <th>Predicted</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for m in matches %}
+    <div class="table-scroll">
+      <table class="table table-interactive">
+        <thead>
           <tr>
-            <td>{{ m.home_team.name }} vs {{ m.away_team.name }}</td>
-            <td>{{ m.get_status_display }}</td>
-            <td>
-              {% if m.home_score is not None %}
-                {{ m.home_score }}–{{ m.away_score }}
-              {% else %}
-                <span class="muted">—</span>
-              {% endif %}
-            </td>
-            <td class="pred-cell">
-              {% if m.latest_prediction %}
-                <a class="scoreline sm" href="{% url 'predictions:match_detail' match_id=m.id %}">{{ m.latest_prediction.scoreline_label }}</a>
-                <span class="muted small">· {{ m.latest_prediction.confidence }}%</span>
-                {% if m.pred_scorers_one_line %}
-                  <div class="scorer-blurb muted small">{{ m.pred_scorers_one_line }}</div>
-                {% endif %}
-              {% else %}
-                <span class="muted">—</span>
-              {% endif %}
-            </td>
-            <td><a class="btn btn-ghost" href="{% url 'predictions:match_detail' match_id=m.id %}">Open</a></td>
+            <th>Fixture</th>
+            <th>Status</th>
+            <th>Actual</th>
+            <th>Predicted</th>
+            <th></th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {% for m in matches %}
+            <tr class="table-row-click" data-href="{% url 'predictions:match_detail' match_id=m.id %}">
+              <td>{{ m.home_team.name }} vs {{ m.away_team.name }}</td>
+              <td>{{ m.get_status_display }}</td>
+              <td>
+                {% if m.home_score is not None %}
+                  {{ m.home_score }}–{{ m.away_score }}
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td class="pred-cell">
+                {% if m.latest_prediction %}
+                  <a class="scoreline sm" href="{% url 'predictions:match_detail' match_id=m.id %}">{{ m.latest_prediction.scoreline_label }}</a>
+                  <span class="muted small">· {{ m.latest_prediction.confidence }}%</span>
+                  {% if m.pred_scorers_one_line %}
+                    <div class="scorer-blurb muted small">{{ m.pred_scorers_one_line }}</div>
+                  {% endif %}
+                {% else %}
+                  <span class="muted">—</span>
+                {% endif %}
+              </td>
+              <td><a class="btn btn-ghost" href="{% url 'predictions:match_detail' match_id=m.id %}">Open</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p class="muted">
       {% if search_query %}No matches in this round match “{{ search_query }}”.{% else %}No matches in this round.{% endif %}
     </p>
   {% endif %}
 </section>
+<script>
+  (function () {
+    document.querySelectorAll(".table-row-click").forEach(function (row) {
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("a, button, input")) return;
+        var u = row.getAttribute("data-href");
+        if (u) window.location.href = u;
+      });
+    });
+  })();
+</script>
 {% endblock %}

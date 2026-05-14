@@ -9,14 +9,57 @@
 </head>
 <body>
   <header class="site-header">
-    <div class="wrap header-inner">
-      <a class="brand" href="{% url 'predictions:home' %}">WC Predict</a>
-      <nav class="nav">
-        <a href="{% url 'predictions:home' %}">Rounds</a>
-        <a href="{% url 'predictions:fixtures_hub' %}">Fixtures</a>
-        <a href="{% url 'predictions:sources' %}">Sources</a>
-        <a href="/admin/">Admin</a>
-      </nav>
+    <div class="wrap header-toolbar">
+      <div class="header-brand-row">
+        <a class="brand" href="{% url 'predictions:home' %}">WC Predict</a>
+        <span class="header-hint muted small" title="Press / to focus search">/</span>
+      </div>
+      <div class="header-nav-cluster">
+        <nav class="nav nav-pills" aria-label="Primary">
+          <a href="{% url 'predictions:home' %}">Rounds</a>
+          <a href="{% url 'predictions:fixtures_hub' %}">Fixtures</a>
+          <a href="{% url 'predictions:sources' %}">Sources</a>
+          <a href="/admin/">Admin</a>
+        </nav>
+        <form
+          class="header-search"
+          method="get"
+          action="{% url 'predictions:fixtures_hub' %}"
+          role="search"
+          aria-label="Search fixtures"
+        >
+          <label class="sr-only" for="nav-search-q">Search fixtures</label>
+          <select class="header-select" name="tab" aria-label="Fixture scope">
+            {% if request.resolver_match.url_name == 'fixtures_hub' %}
+              <option value="current"{% if request.GET.tab != 'worldcup' %} selected{% endif %}>Current</option>
+              <option value="worldcup"{% if request.GET.tab == 'worldcup' %} selected{% endif %}>World Cup</option>
+            {% else %}
+              <option value="worldcup" selected>World Cup</option>
+              <option value="current">Current</option>
+            {% endif %}
+          </select>
+          <input
+            id="nav-search-q"
+            class="header-search-input"
+            type="search"
+            name="q"
+            value="{{ request.GET.q|default_if_none:'' }}"
+            placeholder="Teams, codes, groups A–L…"
+            autocomplete="off"
+            maxlength="120"
+          >
+          <button type="submit" class="btn btn-primary btn-compact">Search</button>
+        </form>
+        <div class="header-extras">
+          <label class="sr-only" for="nav-round-jump">Jump to round</label>
+          <select id="nav-round-jump" class="header-select header-select-wide" aria-label="Jump to round">
+            <option value="">Round ▾</option>
+            {% for r in nav_rounds %}
+              <option value="{% url 'predictions:round' round_name=r.round_name %}">{{ r.round_name }} ({{ r.match_count }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
     </div>
   </header>
   {% if messages %}
@@ -32,5 +75,27 @@
   <footer class="site-footer wrap">
     <p>Predictions are experimental and not betting advice. Wire your own data sources and review model output.</p>
   </footer>
+  <script>
+    (function () {
+      var jump = document.getElementById("nav-round-jump");
+      if (jump) {
+        jump.addEventListener("change", function () {
+          if (this.value) window.location.href = this.value;
+          this.selectedIndex = 0;
+        });
+      }
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "/" || e.ctrlKey || e.metaKey || e.altKey) return;
+        var t = document.activeElement && document.activeElement.tagName;
+        if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT") return;
+        var q = document.getElementById("nav-search-q");
+        if (q) {
+          e.preventDefault();
+          q.focus();
+          q.select();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
