@@ -2,6 +2,7 @@
 # Run migrations on every start so tables exist (Neon if DATABASE_URL is set, else SQLite).
 set -euo pipefail
 python manage.py migrate --noinput
+python manage.py ensure_initial_data
 # Ensure /static/ assets exist when the build step skipped collectstatic (common on Render).
 if [ -n "${RENDER:-}" ] || [ -n "${DATABASE_URL:-}" ] || [ "${DJANGO_COLLECTSTATIC_ON_START:-0}" = "1" ]; then
   python manage.py collectstatic --noinput

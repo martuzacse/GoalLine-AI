@@ -25,7 +25,11 @@
         {% endfor %}
       </ul>
     {% else %}
-      <p class="muted">No matches yet. Run <code>python manage.py seed_demo</code> then reload.</p>
+      <p class="muted">
+        No matches yet. On a fresh deploy, demo rows load automatically on boot when the database is empty
+        (or run <code>python manage.py ensure_initial_data</code> in the Render shell). For all 72 group-stage
+        World Cup fixtures: <code>python manage.py load_wc2026_fixtures --replace-wc</code>.
+      </p>
     {% endif %}
   </div>
   <div class="card">
@@ -49,7 +53,7 @@
         {% endfor %}
       </ul>
     {% else %}
-      <p class="muted">Seed data to see fixtures here.</p>
+      <p class="muted">No upcoming sample rows yet — add matches in admin or load fixtures (see Rounds column).</p>
     {% endif %}
   </div>
 </section>

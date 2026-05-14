@@ -28,3 +28,13 @@ if os.environ.get("AUTO_COLLECTSTATIC", "1").lower() in ("1", "true", "yes"):
         marker = settings.STATIC_ROOT / "css" / "app.css"
         if not marker.exists():
             call_command("collectstatic", "--noinput", verbosity=0)
+
+# Demo data when DB is empty (fresh Neon). Opt out: AUTO_SEED_DEMO=0
+if os.environ.get("AUTO_SEED_DEMO", "1").lower() in ("1", "true", "yes"):
+    if os.environ.get("DATABASE_URL") or os.environ.get("RENDER"):
+        try:
+            call_command("ensure_initial_data", verbosity=0)
+        except Exception:
+            import logging
+
+            logging.exception("ensure_initial_data failed")
