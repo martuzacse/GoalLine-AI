@@ -1,4 +1,5 @@
-{% if prediction.predicted_scorers %}
+{% load pred_tags %}
+{% if prediction.predicted_scorers|is_dict %}
   {% with ps=prediction.predicted_scorers %}
     {% if ps.summary %}
       <p class="scorers-summary">{{ ps.summary }}</p>
